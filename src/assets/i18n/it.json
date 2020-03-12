@@ -25,6 +25,8 @@
     "SignUp": "Registrati",
     "AlreadyHaveAnAccount": "Hai già un account?",
     "DontHaveAnAccountYet": "Non hai ancora un account?",
+    "Dont": "Non",
+    "HaveAnAccountYet": "hai ancora un account?",
     "QuickTipsAssigned": "Le chat assegnate aiutano a mantenere una distribuzione uniforme del carico di lavoro, soprattutto per i team più grandi.",
     "QuickTipsPooled": "Le chat 'pooled' offrono agli agenti maggiore autonomia, consentendo loro di lavorare secondo i propri ritmi.",
     "QuickTipsBot": "Seleziona un bot che risponde automaticamente.",
@@ -75,6 +77,7 @@
     "ViewContactRequests": "Vedi richieste",
     "ContactDetails": "Dettagli contatto",
     "Department": "Dipartimento",
+    "SelectADepartment": "Seleziona un departimento",
     "DepartmentId": "Id dipartimento",
     "ProjectId": "Id progetto",
     "Message": "Messaggio",
@@ -384,13 +387,76 @@
     "NoServedRequests": "No richiesta servita",
     "NoRequests": "Nessuna richiesta",
     "MultiLanguagePreview": "Cambia lingua di anteprima",
-    "RequiredField":"Campo obbligatorio",
-    "Text":"Testo",
-    "Alignment":"Allineamento",
+    "RequiredField": "Campo obbligatorio",
+    "Text": "Testo",
+    "Alignment": "Allineamento",
     "UserRole": "Ruolo utente",
-    "BotType": " / Tipo bot",
+    "BotType": "Tipo bot",
     "Language": "Lingua",
-    "ReassignToDept":"Riassegna al dipartimento",
+    "ReassignToDept": "Riassegna al dipartimento",
+    "AddTranslation": "Aggiungi traduzione",
+    "Completed": "Completato",
+    "TranslationDeleted": "traduzione {{language_name}}  eliminata",
+    "BotIntegration": "Integrazione bot",
+    "ChooseBotType": "Scegli il tipo di bot",
+    "CreateA": "Crea un '{{ bottype }} bot'",
+    "CreateAN": "Crea un '{{ bottype }} bot'",
+    "ServiceAccountPrivateKeyFile":"File chiave privata dell'account di servizio",
+    "DragAFileHereOr":"Trascina il tuo file .json delle credenziali qui o",
+    "ToUpload":"per caricare",
+    "Browse":"sfoglia",
+    "CreateAnswers":"Crea risposte",
+    "CreateAFreeAccount":"Crea un account gratis",
+    "CreateTicket":"Crea Richiesta Interna",
+    "Ok":"Ok",
+    "Subject":"Oggetto",
+    "DefaultBotLanguageInDialogflow":"Lingua bot predefinita in Dialogflow",
+    "OurNativeEasyAndPowerfulNLPChatbot":"Il nostro chatbot nativo, semplice e potente NLP (Natural Language Processing)",
+    "UseDialogflowToTrainYourBot...":"Usa Dialogflow per addestrare il tuo bot con la nostra integrazione nativa e innovativa di Dialogflow",
+    "UseYourFavouriteTechnology...":"Usa la tua tecnologia preferita per incorporare il tuo chatbot con {{ company_name }}. Dai un'occhiata al nostro",
+    "GetStartedTutorial":"Tutorial",
+    "DialogflowKnowledgeBaseID":"ID della knowledge base di Dialogflow",
+    "FillTheFieldOnlyIfYouWantToUseDialogflowKB":"Compila il campo solo se si desideri utilizzare la funzionalità della Knowledge-base di Dialogflow",
+    "HereTheTutorial": "Qui il tutorial su come connettere i tuoi chatbot a {{ company_name }}.",
+    "FiletypeNotSupported":"file type not supported",
+    "CannedResponses": {
+        "QuickTips": {
+            "1": "Le Risposte Predefinite sono messaggi predefiniti che è possibile richiamare facilmente durante la chat.",
+            "2": "Se si risponde spesso alle stesse domande, considera di salvare quelle risposte come risposte predefinite.",
+            "3": "Con risposte predefinite, digiti il messaggio una volta, lo salvi e lo riutilizzi in chat ogni volta che ne hai bisogno.",
+            "4": "Puoi anche creare un'esperienza più coinvolgente per i tuoi clienti usando la personalizzazione nel tuo messaggio:",
+            "5": "1) Quando si modifica un messaggio, è possibile inserire un campo di personalizzazione selezionando prima l'area in cui si desidera creare il campo.",
+            "6": "2) Quindi, fai clic sul pulsante AGGIUNGI PERSONALIZZAZIONE ",
+            "7": "3) Facendo clic sul pulsante AGGIUNGI PERSONALIZZAZIONE verrà visualizzato un elenco in cui è possibile selezionare la personalizzazione che si desidera aggiungere al messaggio."
+        },
+        "CR":"RP",
+        "CannedResponses":"Risposte predefinite",
+        "AddResponses":"Crea Risposta",
+        "EditResponses":"Modifica Risposta",
+        "Responses":"Risposte",
+        "YouHaveNotAddedAnyCannedResponses":"Non hai ancora aggiunto risposte predefinite",
+        "Title":"Titolo",
+        "Message":"Messaggio",
+        "AddCustomization":"Aggiungi personalizzazione",
+        "SelectACustomizationToAddToYourMessage": "Seleziona una valore personalizzato da aggiungere al messaggio",
+        "recipient_name_desc":"Il nome della persona a cui l'agente sta rispondendo verrà aggiunto al messaggio.",
+        "recipient_lastname_desc":"Il cognome della persona a cui l'agente sta rispondendo verrà aggiunto al messaggio.",
+        "recipient_email_desc": "L'email della persona a cui l'agente sta rispondendo verrà aggiunto al messaggio.",
+        "recipient_website_desc": "Il sito web della persona a cui l'agente sta rispondendo verrà aggiunto al messaggio.",
+        "agent_name_desc":"Il nome dell'agente che sta rispondendo verrà aggiunto al messaggio.",
+        "First_name_of_recipient":"Nome del destinatario",
+        "Email_of_recipient":"Email del destinatario",
+        "Website_of_recipient":"Website del destinatario",
+        "First_name_of_agent":"Nome dell'agente",
+        "NotificationMsgs": {
+            "DeleteCannedResSuccess": "Risposta eliminata correttamente",
+            "DeleteCannedResError": "Si è verificato un errore durante l'eliminazione della risposta",
+            "CreateCannedResSuccess": "Risposta creata correttamente", 
+            "CreateCannedResError": "Si è verificato un errore durante la creazione della risposta", 
+            "UpdateCannedResSuccess": "Risposta aggiornata con successo",
+            "UpdateCannedResError": "Si è verificato un errore durante l'aggiornamento della risposta"
+        }
+    },
     "Pricing": {
         "Operators": "Operatori",
         "UpgradePlan": "Aggiorna Piano",
@@ -719,7 +785,18 @@
         "ExternalBot": "Bot esterno",
         "NoUrlProvided": "Nessun URL fornito",
         "EnterExternalBotUrl": "inserire l'URL del Bot esterno",
-        "TheBotHasBeenTrashed": "il bot è stato eliminato"
+        "TheBotHasBeenTrashed": "il bot è stato eliminato",
+        "SelectAndConfigureABot": "Seleziona e configura un Bot e poi attivalo in un dipartimento per usarlo nelle conversazioni",
+        "ExternabotQuickTips": "{{ company_name }} is designed to allow external chatbots to easy communicate with your Agents or End users.",
+        "DialogflowQuickTips_1A" :"Accedi alla",
+        "DialogflowQuickTips_1B" :"console di Dialogflow.",
+        "DialogflowQuickTips_2":"Seleziona il tuo agente dal menu a discesa nel pannello di sinistra.",
+        "DialogflowQuickTips_3":"Fare clic sul pulsante delle impostazioni. Si aprirà la pagina delle impostazioni dell'agente.",
+        "DialogflowQuickTips_4":"Nella scheda generale, cerca GOOGLE PROJECTS e fai clic sul link Account di servizio.",
+        "DialogflowQuickTips_5":"Dopo essere stato reindirizzato alla console SERVICE ACCOUNT, crea una chiave premendo '+ CREATE SERVICE ACCOUNT' nel menu in alto. Viene creato il file JSON (.json) delle credenziali che verrà scaricato automaticamente.",
+        "DialogflowQuickTips_6":"Ora carica il file .json delle credenziali.",
+        "DialogflowQuickTips_7":"Se hai bisogno di un tutorial dettagliato su come creare un file di credenziali, per favore"
+
     },
     "BotsAddEditPage": {
         "AddBot": "Aggiungi Bot",
@@ -738,8 +815,10 @@
         "HasBeenCreated": "è stato creato con successo",
         "AddFaqToTheBot": "Aggiungi FAQs al Bot",
         "ReturnToTheBotList": "Ritorna all'elenco dei bot",
+        "BackToBotsList": "Bots list",
         "AnErrorHasOccurred": "Si è verificato un errore",
-        "Continue": "Continua"
+        "Continue": "Continua",
+        "Type": "Tipo"
     },
     "FaqPage": {
         "EditBOT": "Modifica BOT",
@@ -873,7 +952,7 @@
         "Continue": "Continua",
         "Reassign": "Riassegna",
         "SelectTheUserToWhom": "Assegna la richiesta a un altro utente",
-        "SelectTheDeptsToWhom": "ssegna la richiesta a un altro dipartimento",
+        "SelectTheDeptsToWhom": "Assegna la richiesta a un altro dipartimento",
         "ReassignRequestTo": "Riassegna richiesta a",
         "ReassignRequest": "Riassegna richiesta",
         "AssignRequest": "Assegna richiesta",
@@ -905,8 +984,11 @@
         "CloseTheRequest": "Chiudi richiesta",
         "ForwardTheRequest": "inoltra richiesta",
         "RequestClosed": "Richiesta chiusa",
+        "InternalRequestClosed": "Richiesta interna chiusa",
+        "Subject":"Oggetto",
         "WasServedBy": "è stata servita da",
         "RequestUnserved": "Richiesta non servita",
+        "InternalRequestUnserved": "Richiesta interna non servita",
         "RequestServedBy": "Richiesta servita",
         "RequestId": "Id richiesta",
         "Published": "Pubblicata",
@@ -983,7 +1065,8 @@
                 "Placeholder": "Seleziona metodo attivazione",
                 "WhenRequestChat": "Quando un visitatore richiede una chat",
                 "WhenMessageIsSent": "All'invio di un nuovo messaggio",
-                "WhenUserIsLogged": "Quando un utente ha effettuato l'accesso"
+                "WhenUserIsLogged": "Quando un utente ha effettuato l'accesso",
+                "NewEvent": "Nuovo evento"
             },
             "CheckConditions": "Verifica condizioni",
             "CheckConditions_dropdownElements": {
@@ -998,8 +1081,8 @@
             "CreateTriggerButton": "Crea trigger",
             "UpdateTriggerButton": "Salva modifiche",
             "CancelButton": "Cancella",
-            "ConditionNotifyError": "Deve essere presente almeno 1 condizione di attivazione del trigger",
-            "ActionNotifyError": "Deve essere presente almeno 1 azione da eseguire per il trigger"
+            "Condition]Error": "Deve essere presente almeno 1 condizione di attivazione del trigger",
+            "Action]Error": "Deve essere presente almeno 1 azione da eseguire per il trigger"
         },
         "MessagePlaceholder": "Messaggio",
         "ServerError": "Si è verificato un errore durante il caricamento dei dati",
@@ -1015,7 +1098,7 @@
                         "ChatInformation": "Info correlate alla chat"
                     },
                     "label_key": {
-                        "VisitorSearchTerm": "Termini di ricerca visitatore",
+                        "VisitorSearchTerm": "Messaggio",
                         "VisitorName": "Nome visitatore",
                         "VisitorMail": "Indirizzo e-mail visitatore",
                         "VisitorDepartment": "Dipartimento visitatore",
@@ -1042,20 +1125,20 @@
                         "LocationVisitor": "Ubicazione del visitatore"
                     },
                     "label_key": {
-                        "VisitorSearchTerm": "Testo messaggio del visitatore",
+                        "VisitorSearchTerm": "Messaggio",
                         "VisitorName": "Nome visitatore",
                         "VisitorMail": "Indirizzo e-mail visitatore",
-                        "VisitorFirstText": "Primo messaggio visitatore",
+                        "VisitorFirstText": "Primo messaggio",
                         "VisitorDepartment": "Dipartimento visitatore",
                         "VisitorReferrer": "Referente visitatore",
                         "VisitoruserAgent": "Numero di agenti",
-                        "VisitoruserAgentAvailable":"Numero di agenti disponibili online",
+                        "VisitoruserAgentAvailable": "Numero di agenti disponibili online",
                         "VisitorURL": "URL pagina visitatore",
                         "VisitorPageTitle": "Titolo pagina visitatore",
                         "VisitorBrowser": "Browser visitatore",
                         "VisitorPlatform": "Piattaforma visitatore",
                         "Department": "Dipartimento",
-                        "DepartmentHasBot": "Dipartimento (bot)",
+                        "DepartmentHasBot": "Dipartimento ha bot",
                         "VisitorServed": "Visitatore assistito",
                         "RequestStatus": "Stato richiesta",
                         "ChannelName": "Nome del canale",
@@ -1078,12 +1161,24 @@
                     },
                     "label_key": {
                         "VisitorName": "Nome visitatore",
-                        "VisitorLastName" : "Cognome visitatore",
+                        "VisitorLastName": "Cognome visitatore",
                         "VisitorMail": "Indirizzo e-mail visitatore"
                     },
                     "placeholder": {
                         "SelectDepartment": "Seleziona dipartimento",
                         "SelectStatus": "Seleziona stato"
+                    },
+                    "event": {
+                        "groupId": {
+                            "VisitorInformation": "Info visitatore"
+                        },
+                        "label_key": {
+                            "EventName": "Nome evento"
+                        },
+                        "placeholder": {
+                            "SelectDepartment": "Seleziona dipartimento",
+                            "SelectStatus": "Seleziona stato"
+                        }
                     }
                 }
             },
@@ -1098,14 +1193,20 @@
                     "GreaterEqualThan": "Maggiore o uguale a",
                     "LessEqualThan": "Minore o uguale a",
                     "HasOwnProperty": "Has a bot",
-                    "NotHasOwnProperty":"Not has a bot"
+                    "NotHasOwnProperty": "Not has a bot"
                 }
             },
             "ActionArray": {
                 "label_key": {
                     "SendMessageToVisitor": "Invia messaggio al visitatore",
                     "AssignToDep": "Assegna a dipartimento",
-                    "ReAssignToSameDep": "Riassegna allo stesso dipartimento"
+                    "ReAssignToSameDep": "Riassegna allo stesso dipartimento",
+                    "RequestUpdateStatus": "Cambia stato della richiesta",
+                    "RequestClose": "Chiudi richiesta",
+                    "RequestReopen": "Riapri richiesta",
+                    "RequestParticipantsJoin": "Partecipa alla richiesta",
+                    "RequestParticipantsLeave": "Lascia la richiesta",
+                    "RequestCreate": "Crea una richiesta"
                 },
                 "placeholder": {
                     "NameAgent": "Nome dell'agente",

@@ -1,10 +1,11 @@
 {
   "name": "@tiledesk/tiledesk-dashboard",
-  "version": "2.0.0-beta.14",
+  "version": "2.0.0-beta.38",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --aot",
-    "build": "ng build --prod",
+    "build": "ng build -- --output-path=dist --base-href ./",
+    "build2": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
@@ -16,6 +17,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Tiledesk/tiledesk-dashboard"
+  },
+  "bin": {
+    "tiledesk-dashboard": "./bin/dashboard"
   },
   "private": false,
   "dependencies": {
@@ -45,6 +49,7 @@
     "chartist": "0.11.0",
     "classlist.js": "^1.1.20150312",
     "core-js": "^2.5.1",
+    "express": "^4.17.1",
     "firebase": "^5.8.6",
     "googleapis": "19.0.0",
     "humanize-duration": "^3.18.0",
@@ -59,6 +64,7 @@
     "rxjs": "^5.5.4",
     "tslib": "^1.9.0",
     "ua-parser-js": "^0.7.20",
+    "uuid": "^3.4.0",
     "web-animations-js": "^2.3.1",
     "zone.js": "0.8.4"
   },

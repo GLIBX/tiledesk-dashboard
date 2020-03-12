@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, Self } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ElementRef, Self, OnDestroy } from '@angular/core';
 import { Location, LocationStrategy, PathLocationStrategy, PopStateEvent } from '@angular/common';
 import 'rxjs/add/operator/filter';
 import { NavbarComponent } from './components/navbar/navbar.component';
@@ -25,14 +25,16 @@ import { WsMsgsService } from './services/websocket/ws-msgs.service';
 import { WebSocketJs } from './services/websocket/websocket-js';
 import { Title } from '@angular/platform-browser';
 import brand from 'assets/brand/brand.json';
+
 // import { webSocket } from "rxjs/webSocket";
+export let browserRefresh = false;
 
 @Component({
     selector: 'appdashboard-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     private _router: Subscription;
     private lastPoppedUrl: string;
     private yScrollStack: number[] = [];
@@ -47,8 +49,13 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     @ViewChild('myModal') myModal: ElementRef;
     isPageWithNav: boolean;
- 
-    wsbasepath = environment.websocket.wsUrl;
+
+    // wsbasepath = environment.websocket.wsUrl; // moved
+
+    // wsbasepath = environment.wsUrl;
+
+
+    subscription: Subscription;
     // background_bottom_section = brand.sidebar.background_bottom_section
     constructor(
         public location: Location,
@@ -62,8 +69,8 @@ export class AppComponent implements OnInit, AfterViewInit {
         public wsMsgsService: WsMsgsService,
         public webSocketJs: WebSocketJs,
         private metaTitle: Title,
-      
-        
+
+
         // private faqKbService: FaqKbService,
     ) {
 
@@ -81,7 +88,7 @@ export class AppComponent implements OnInit, AfterViewInit {
         // firebase.initializeApp(firebaseConfig);
 
         if (!appConfigService.getConfig().firebase || appConfigService.getConfig().firebase.apiKey === 'CHANGEIT') {
-            throw new Error('firebase config is not defined. Please create your firebase-config.json. See the Chat21-Web_widget Installation Page');
+            throw new Error('firebase config is not defined. Please create your dashboard-config.json. See the Chat21-Web_widget Installation Page');
         }
 
         // const firebase_conf = JSON.parse(appConfigService.getConfig().firebase)
@@ -105,8 +112,19 @@ export class AppComponent implements OnInit, AfterViewInit {
             }
         }
         // this.unservedRequestCount = 0
+
+
+        this.subscription = router.events.subscribe((event) => {
+            if (event instanceof NavigationStart) {
+                browserRefresh = !router.navigated;
+            }
+        });
     }
 
+
+    ngOnDestroy() {
+        this.subscription.unsubscribe();
+    }
 
     switchLanguage(language: string) {
         this.translate.use(language);
@@ -129,8 +147,8 @@ export class AppComponent implements OnInit, AfterViewInit {
 
         console.log(' ====== >>> HELLO APP.COMP (ngOnInit) <<< ====== ')
         console.log('!! FIREBASE  ', firebase);
-        
-        this.resetRequestsIfUserIsSignedOut();
+
+        this.closeWSAndResetWsRequestsIfUserIsSignedOut();
 
         // NEW (SEE ALSO )
         const _elemMainPanel = <HTMLElement>document.querySelector('.main-panel');
@@ -180,74 +198,70 @@ export class AppComponent implements OnInit, AfterViewInit {
         // -----------------------------------------------------------------------------------------------------
         this.getCurrentUserAndConnectToWs();
     }
-    
+
     getCurrentUserAndConnectToWs() {
-        const self = this
+
         this.auth.user_bs.subscribe((user) => {
-          console.log('% »»» WebSocketJs WF - APP-COMPONENT - LoggedUser ', user);
-          console.log('% »»» WebSocketJs WF - APP-COMPONENT - WS URL ', this.wsbasepath);
-    
-          if (user && user.token) {
-    
-            // const CHAT_URL = 'ws://tiledesk-server-pre.herokuapp.com?token=' + user.token
-            const CHAT_URL = this.wsbasepath + user.token
-            
+            console.log('% »»» WebSocketJs WF - APP-COMPONENT - LoggedUser ', user);
+            // console.log('% »»» WebSocketJs WF - APP-COMPONENT - WS URL ', this.wsbasepath);
+            console.log('% »»» WebSocketJs WF - APP-COMPONENT - WS URL ', this.appConfigService.getConfig().wsUrl);
 
-            // -----------------------------------------------------------------------------------------------------
-            // Websocket init 
-            // -----------------------------------------------------------------------------------------------------
-            this.webSocketJs.init(
-                CHAT_URL,
-                undefined,
-                undefined,
-                undefined
-            );
-          }
+            if (user && user.token) {
+
+                // const CHAT_URL = 'ws://tiledesk-server-pre.herokuapp.com?token=' + user.token
+                const CHAT_URL = this.appConfigService.getConfig().wsUrl + '?token=' + user.token
+
+
+                // -----------------------------------------------------------------------------------------------------
+                // Websocket init 
+                // -----------------------------------------------------------------------------------------------------
+                this.webSocketJs.init(
+                    CHAT_URL,
+                    undefined,
+                    undefined,
+                    undefined
+                );
+            }
         });
-      }
+    }
 
- 
-    resetRequestsIfUserIsSignedOut() {
+
+    closeWSAndResetWsRequestsIfUserIsSignedOut() {
         const self = this
-        console.log('resetRequestsIfUserIsSignedOut ', typeof firebase.auth)
+        console.log('% »»» WebSocketJs WF - APP-COMPONENT - closeWSAndResetWsRequestsIfUserIsSignedOut ', typeof firebase.auth)
         firebase.auth().onAuthStateChanged(function (user) {
             if (user) {
-                console.log('resetRequestsIfUserIsSignedOut - User is signed in. ', user)
+                console.log('% »»» WebSocketJs WF - APP-COMPONENT - User is signed in. ', user)
                 this.userIsSignedIn = true
 
             } else {
-                console.log('resetRequestsIfUserIsSignedOut - No user is signed in. ', user)
+                console.log('% »»» WebSocketJs WF - APP-COMPONENT - closeWSAndResetWsRequestsIfUserIsSignedOut - No user is signed in. ', user)
 
                 this.userIsSignedIn = false
-                console.log('resetRequestsIfUserIsSignedOut - User is signed in. ', this.userIsSignedIn)
+                console.log('% »»» WebSocketJs WF - APP-COMPONENT - User is signed in. ', this.userIsSignedIn)
 
                 // USED TO DETERMINE WHEN VISUALIZING THE POPUP WINDOW 'SESSION EXPIRED'
                 self.auth.userIsSignedIn(this.userIsSignedIn);
 
-                // No user is signed in.
-                // tslint:disable-next-line:no-debugger
-                // debugger
-                if (self.requestsService.unsubscribe) {
-                    self.requestsService.unsubscribe()
-                    self.requestsService.resetRequestsList()
-                }
+                // -----------------------------------------------------------------------------------------------------    
+                //  Websocket - Close websocket and reset ws requests list 
+                // -----------------------------------------------------------------------------------------------------
 
-            // -----------------------------------------------------------------------------------------------------    
-            //  Websocket - Close websocket and reset ws requests list 
-            // -----------------------------------------------------------------------------------------------------
-            self.closeWebsocketAndResetRequestsList()
-            
+                self.webSocketJs.close()
+                self.wsRequestsService.resetWsRequestList()
+
+                /* The old unsuscribe to firestore requests when No user is signed in. */
+                // if (self.requestsService.unsubscribe) {
+                //     self.requestsService.unsubscribe()
+                //     self.requestsService.resetRequestsList()
+                // }
 
             }
         });
     }
 
 
-    closeWebsocketAndResetRequestsList() {
-        // this.webSocketJs.closeWebsocket()
-        this.webSocketJs.close()
-        this.wsRequestsService.resetWsRequestList()
-    }
+
 
     // SET TO 'none' the box-shadow style of the navbar in the page in which is present the second navbar (i.e. the bottom-nav)
     unsetNavbarBoxShadow() {
@@ -268,6 +282,7 @@ export class AppComponent implements OnInit, AfterViewInit {
                     (this.route.indexOf('/auth') !== -1) ||
                     (this.route.indexOf('/analytics') !== -1) ||
                     (this.route.indexOf('/user-profile') !== -1) ||
+                    (this.route.indexOf('/bot-select-type') !== -1) ||
                     (this.route.indexOf('/change') !== -1)
                 ) {
 
@@ -337,13 +352,15 @@ export class AppComponent implements OnInit, AfterViewInit {
                     elemNavbar.setAttribute('style', 'display:block;');
                     elemMainPanel.setAttribute('style', 'overflow-x: hidden !important;');
                 }
-                
+
 
                 // RESOLVE THE BUG: THE "MOBILE" SIDEBAR IN THE PAGE "RECENT PROJECT" IS SMALLER OF THE APP WINDOW
                 if (this.route === '/projects') {
                     // elemSidebarWrapper.setAttribute('style', `height:100vh; background-color: ${this.background_bottom_section} !important;`);
-                    elemSidebarWrapper.style.height = "100vh"
+
+                    elemSidebarWrapper.style.height = "100vh";
                 } else {
+                    elemSidebarWrapper.style.height = "calc(100vh - 60px)";
                     // elemSidebarWrapper.setAttribute('style', `background-color: ${this.background_bottom_section} !important;`);
                 }
 
@@ -435,9 +452,10 @@ export class AppComponent implements OnInit, AfterViewInit {
                 } else {
 
                     this.isPageWithNav = true;
-
-                    if (window['tiledeskSettings']['preChatForm']) {
-                        delete window['tiledeskSettings']['preChatForm'];
+                    if (window && window['tiledeskSettings']) {
+                        if (window['tiledeskSettings']['preChatForm']) {
+                            delete window['tiledeskSettings']['preChatForm'];
+                        }
                     }
                 }
                 // console.log('APP.COMP currentUrl ', this.route, 'tiledeskSettings ', window['tiledeskSettings']);

@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, NgZone, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, NgZone, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { WsRequestsService } from '../../services/websocket/ws-requests.service';
 import { UsersLocalDbService } from '../../services/users-local-db.service';
 import { BotLocalDbService } from '../../services/bot-local-db.service';
-import { Router } from '@angular/router';
+import { Router, NavigationStart, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { avatarPlaceholder, getColorBck } from '../../utils/util';
 import { NotifyService } from '../../core/notify.service';
@@ -26,6 +26,9 @@ import { distinctUntilChanged } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators'
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { browserRefresh } from '../../app.component';
+import * as uuid from 'uuid';
+
 
 @Component({
   selector: 'appdashboard-ws-requests-list',
@@ -33,6 +36,10 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
   styleUrls: ['./ws-requests-list.component.scss']
 })
 export class WsRequestsListComponent extends WsSharedComponent implements OnInit, AfterViewInit, OnDestroy {
+  
+  // CHAT_BASE_URL = environment.chat.CHAT_BASE_URL; // moved
+  // CHAT_BASE_URL = environment.CHAT_BASE_URL; // now get from appconfig
+  CHAT_BASE_URL: string;
 
   // used to unsuscribe from behaviour subject
   private unsubscribe$: Subject<any> = new Subject<any>();
@@ -76,7 +83,9 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
   selectedDeptId: string;
   selectedAgentId: string;
 
-  TESTSITE_BASE_URL = environment.testsite.testsiteBaseUrl;
+  // TESTSITE_BASE_URL = environment.testsite.testsiteBaseUrl; // moved
+  // TESTSITE_BASE_URL = environment.testsiteBaseUrl;   // now get from appconfig
+  TESTSITE_BASE_URL: string;
   projectName: string;
 
   participantsInRequests: any;
@@ -84,7 +93,15 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
 
   filter: any[] = [{ 'deptId': null }, { 'agentId': null }];
   hasFiltered = false;
-
+  public browserRefresh: boolean;
+  displayInternalRequestModal = 'none';
+  internalRequest_subject: string;
+  internalRequest_deptId: string;
+  internalRequest_message: string;
+  showSpinner_createInternalRequest = false;
+  hasClickedCreateNewInternalRequest= false;
+  createNewInternalRequest_hasError: boolean;
+  internal_request_id: string;
 
   /**
    * Constructor
@@ -105,13 +122,13 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
     public auth: AuthService,
     private requestsService: RequestsService,
     private translate: TranslateService,
-    private usersService: UsersService,
-    private faqKbService: FaqKbService,
+    public usersService: UsersService,
+    public faqKbService: FaqKbService,
     public appConfigService: AppConfigService,
     private departmentService: DepartmentService,
 
   ) {
-    super(botLocalDbService, usersLocalDbService, router, wsRequestsService);
+    super(botLocalDbService, usersLocalDbService, router, wsRequestsService, faqKbService, usersService);
     this.zone = new NgZone({ enableLongStackTrace: false });
   }
 
@@ -123,36 +140,88 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
    * On init
    */
   ngOnInit() {
-    console.log("% »»» WebSocketJs WF +++++ ws-requests--- list ----- ngOnInit ");
-    this.getWsRequests$();
+
+    // this.getWsRequests$();
     this.getCurrentProject();
     this.getLoggedUser();
     this.getProjectUserRole();
     this.getStorageBucket();
-    // this.listenToRequestsLength();
+
+
 
     // this.for1();
     // this.getRequestsTotalCount()  
     // this.getAllProjectUsersAndBot();
-    // this.getDepartments();
+    this.getDepartments();
     // const teamContentEl = <HTMLElement>document.querySelector('.team-content');
     // const perfs = new PerfectScrollbar(teamContentEl);
     // this.selectedDeptId = '';
     // this.selectedAgentId = '';
+    this.detectBrowserRefresh();
+
+    this.getChatUrl();
+    this.getTestSiteUrl()
   }
 
-  ngAfterViewInit() {
-
+  getTestSiteUrl() {
+    this.TESTSITE_BASE_URL = this.appConfigService.getConfig().testsiteBaseUrl;
+    console.log('AppConfigService getAppConfig (WS-REQUESTS-LIST COMP.) TESTSITE_BASE_URL', this.TESTSITE_BASE_URL);
   }
+
+  getChatUrl() {
+    this.CHAT_BASE_URL = this.appConfigService.getConfig().CHAT_BASE_URL;
+    console.log('AppConfigService getAppConfig (WS-REQUESTS-LIST COMP.) CHAT_BASE_URL', this.CHAT_BASE_URL);
+  }
+
+  ngAfterViewInit() {  }
 
   ngOnDestroy() {
     console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ ngOnDestroy')
-    // this.subscription.unsubscribe()
+    if (this.subscription) {
+      this.subscription.unsubscribe()
+    }
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
 
 
+  detectBrowserRefresh() {
+    // console.log('% »»» WebSocketJs WF +++++ ws-requests--- list CALLING browserRefresh')
+    this.browserRefresh = browserRefresh;
+    // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list ----- ngOnInit browserRefresh ", this.browserRefresh);
+    // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list ----- ngOnInit browserRefresh ", this.browserRefresh, 'wsRequestsList$.value length', this.wsRequestsService.wsRequestsList$.value.length);
+    if (this.browserRefresh) {
+
+      this.listenToRequestsLength();
+    } else {
+      this.wsRequestsService.wsRequestsList$.value
+      // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list ----- ngOnInit browserRefresh ", this.browserRefresh, 'wsRequestsList$.value length', this.wsRequestsService.wsRequestsList$.value.length);
+
+    }
+  }
+
+  getProjectUserRole() {
+    this.usersService.project_user_role_bs
+      .pipe(
+        takeUntil(this.unsubscribe$)
+      )
+      .subscribe((user_role) => {
+        console.log('% »»» WebSocketJs WF - WsRequestsList USER ROLE ', user_role);
+        if (user_role) {
+          if (user_role === 'agent') {
+            this.ROLE_IS_AGENT = true
+            this.displayBtnLabelSeeYourRequets = true
+            // ------ 
+            this.ONLY_MY_REQUESTS = true
+            this.getWsRequests$();
+          } else {
+            this.ROLE_IS_AGENT = false
+            this.displayBtnLabelSeeYourRequets = false;
+            this.getWsRequests$();
+          }
+        }
+      });
+  }
 
   getDepartments() {
     this.departmentService.getDeptsByProjectId().subscribe((_departments: any) => {
@@ -191,7 +260,7 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
 
   for1() {
     // this.Xlength = this.wsRequestsService.wsRequestsListLength$.value
-    this.wsRequestsService.wsRequestsListLength$.subscribe((totalrequests: number) => {
+    this.wsRequestsService.ws_All_RequestsLength$.subscribe((totalrequests: number) => {
 
       this.Xlength = totalrequests
     })
@@ -308,25 +377,25 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
 
 
   listenToRequestsLength() {
-    this.subscription = this.wsRequestsService.wsRequestsListLength$
+    this.subscription = this.wsRequestsService.ws_All_RequestsLength$
       .pipe(
         takeUntil(this.unsubscribe$)
       )
       .subscribe((totalrequests: number) => {
-        console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ listenToRequestsLength RECEIVED NEXT wsRequestsList LENGTH', totalrequests)
+        console.log('% »»» WebSocketJs WF +++++ ws-requests--- list listenToRequestsLength RECEIVED NEXT wsRequestsList LENGTH', totalrequests)
 
         if (totalrequests === 0) {
           this.SHOW_SIMULATE_REQUEST_BTN = true
           this.showSpinner = false;
-          console.log('% »»» WebSocketJs WF +++++ ws-requests--- ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ listenToRequestsLength SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
-          console.log('% »»» WebSocketJs WF +++++ ws-requests--- ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ listenToRequestsLength showSpinner ', this.showSpinner)
+          console.log('% »»» WebSocketJs WF +++++ ws-requests---  listenToRequestsLength SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
+          console.log('% »»» WebSocketJs WF +++++ ws-requests---  listenToRequestsLength showSpinner ', this.showSpinner)
 
         } else if (totalrequests > 0) {
 
           this.showSpinner = false;
           this.SHOW_SIMULATE_REQUEST_BTN = false
-          console.log('% »»» WebSocketJs WF +++++ ws-requests--- ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ listenToRequestsLength SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
-          console.log('% »»» WebSocketJs WF +++++ ws-requests--- ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ listenToRequestsLength showSpinner ', this.showSpinner)
+          console.log('% »»» WebSocketJs WF +++++ ws-requests---  listenToRequestsLength SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
+          console.log('% »»» WebSocketJs WF +++++ ws-requests---  listenToRequestsLength showSpinner ', this.showSpinner)
 
         }
 
@@ -372,25 +441,9 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
   }
 
 
-  getProjectUserRole() {
-    this.usersService.project_user_role_bs.subscribe((user_role) => {
-      console.log('% »»» WebSocketJs WF - WsRequestsList USER ROLE ', user_role);
-      if (user_role) {
-        if (user_role === 'agent') {
-          this.ROLE_IS_AGENT = true
-          this.displayBtnLabelSeeYourRequets = true
-        } else {
-          this.ROLE_IS_AGENT = false
-          this.displayBtnLabelSeeYourRequets = false;
-        }
-      }
-    });
-  }
-
-
   seeIamAgentRequests(seeIamAgentReq) {
     this.ONLY_MY_REQUESTS = seeIamAgentReq
-    console.log('% »»» WebSocketJs WF - WsRequestsList ONLY_MY_REQUESTS ', this.ONLY_MY_REQUESTS);
+    console.log('% »»» WebSocketJs WF +++++ ws-requests--- list + ONLY_MY_REQUESTS ', this.ONLY_MY_REQUESTS);
     if (seeIamAgentReq === false) {
       this.displayBtnLabelSeeYourRequets = false;
     } else {
@@ -398,38 +451,6 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
     }
     this.getWsRequests$()
   }
-
-  hasmeInAgents(agents, wsrequest) {
-    let iAmThere = false
-    for (let j = 0; j < agents.length; j++) {
-      // console.log("% »»» WebSocketJs - WsRequestsService AGENT ", agents[j]);
-      // console.log("% »»» WebSocketJs WF - WsRequestsList currentUserID 2 ", this.currentUserID);
-      // console.log("% »»» WebSocketJs WF - WsRequestsList id_user ", agents[j].id_user);
-
-      if (this.currentUserID === agents[j].id_user) {
-        iAmThere = true
-      }
-      // console.log("% »»» WebSocketJs WF - WsRequestsList »»» »»» hasmeInAgents", iAmThere, ' request status ', wsrequest.status);
-      return iAmThere
-    }
-  }
-
-  hasmeInParticipants(participants) {
-    let iAmThere = false
-    participants.forEach(participant => {
-      console.log('% »»» WebSocketJs WF - WsRequestsList hasmeInParticipants  participants', participant)
-      if (participant === this.currentUserID) {
-        // console.log('»»»»»»» UTILS MEMBERS ', members)
-        // console.log('»»»»»»» CURRENT_USER_JOINED ', currentUserFireBaseUID);
-        iAmThere = true;
-        return
-      }
-    });
-    // console.log('»»»»»»» CURRENT USER ', currentUserFireBaseUID, ' is JOINED ?', currentUserIsJoined, 'to the request ', request_id);
-    return iAmThere;
-
-  }
-
 
   // hasmeInUnserved(agents) {
   //   let iAmThere = false
@@ -457,9 +478,7 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
     // var uastring = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36";
     parser.setUA(uastring);
     return parser.getResult();
-
   }
-
 
   // getRequestsTotalCount(wsrequests): Observable<[]> {
   //   return Observable.of(wsrequests);
@@ -499,7 +518,6 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
   }
 
   clearAgentFilter() {
-
     // console.log('% »»» WebSocketJs WF WS-RL - clear Agent Filter selectedAgentId', this.selectedAgentId)
     this.filter[1]['agentId'] = null;
     this.hasFiltered = false
@@ -519,87 +537,113 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
     }, 100);
   }
 
+  hasmeInAgents(agents, wsrequest) {
+    // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInAgents agents", agents);
+
+    // let iAmThere = false
+    // agents.forEach(agent => {
+    //   // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInAgents (forEach) agent", agent);
+
+    //   if (agent.id_user === this.currentUserID) {
+    //     iAmThere = true
+    //     console.log("% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInAgents", iAmThere, '(forEach) the request id ', wsrequest.request_id, ' status: ', wsrequest.status, ' agent: ', agents );
+
+    //   } else {
+    //     // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInAgents", iAmThere, '(forEach) the request id', wsrequest.request_id, ' status: ', wsrequest.status , ' agent: ', agents);
+    //   }
+    //   return iAmThere
+    // });
+
+
+    for (let j = 0; j < agents.length; j++) {
+      // console.log("% »»» WebSocketJs WF - WsRequestsList »»» »»» hasmeInAgents agent", agents[j]);
+      console.log("% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInAgents currentUserID 2 ", this.currentUserID);
+      // console.log("% »»» WebSocketJs WF - WsRequestsList id_user ", agents[j].id_user);
+
+      if (this.currentUserID === agents[j].id_user) {
+        return true
+        // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInAgents in If", iAmThere, '(forEach) the request id ', wsrequest.request_id, ' status: ', wsrequest.status, ' agent: ', agents );
+      }
+      // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInAgents", iAmThere, '(forEach) the request id ', wsrequest.request_id, ' status: ', wsrequest.status, ' agent: ', agents );
+      // return iAmThere
+    }
+  }
+
+  // this check fix the bug: the request is assigned to a agent or admin od the dept A 
+  // the the same requets is reassigned to an agent or admin of the dept B
+  // the agent or admin doesn't see the request
+  hasmeInParticipants(participants) {
+    let iAmThere = false
+    participants.forEach(participant => {
+      console.log('% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInParticipants  participant', participant)
+      if (participant === this.currentUserID) {
+        // console.log('»»»»»»» UTILS MEMBERS ', members)
+        // console.log('»»»»»»» CURRENT_USER_JOINED ', currentUserFireBaseUID);
+        iAmThere = true;
+        return
+      }
+    });
+    console.log('% »»» WebSocketJs WF +++++ ws-requests--- list + hasmeInParticipants', iAmThere);
+    return iAmThere;
+
+  }
+
   // -----------------------------------------------------------------------------------------------------
   // @ Subscribe to get the published requests (called On init)
   // -----------------------------------------------------------------------------------------------------
   getWsRequests$() {
-
+    console.log("% »»» WebSocketJs WF +++++ ws-requests--- list - enter NOW in getWsRequests$");
     this.wsRequestsService.wsRequestsList$
       .pipe(
         takeUntil(this.unsubscribe$)
       )
       .subscribe((wsrequests) => {
 
-        console.log("% »»» WebSocketJs WF +++++ ws-requests--- list ----- subscribe to NEXT ", wsrequests);
+        console.log("% »»» WebSocketJs WF +++++ ws-requests--- list - subscribe ", wsrequests);
 
         if (wsrequests) {
+          console.log("% »»» WebSocketJs WF +++++ ws-requests--- list - subscribe > if (wsrequests) ", wsrequests);
+          this.browserRefresh = browserRefresh;
 
-          if (Array.isArray(wsrequests)) {
-
-            // https://stackoverflow.com/questions/18983138/callback-after-all-asynchronous-foreach-callbacks-are-completed
-            let requests = wsrequests.map((item) => {
-              return new Promise((resolve) => {
-                this.asyncFunction(item, resolve);
-              });
-            })
-            Promise.all(requests).then(() => {
-
-              console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ done -> data.length ', wsrequests.length)
-              if (wsrequests.length > 0) {
-
-                this.SHOW_SIMULATE_REQUEST_BTN = false;
-                console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
-                this.showSpinner = false;
-                console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SPINNER ', this.showSpinner)
+          // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list subscribe > if (wsrequests) browserRefresh ", this.browserRefresh, 'wsRequestsList$.value length ', this.wsRequestsService.wsRequestsList$.value.length);
 
 
-              } else if (wsrequests.length === 0) {
-                this.SHOW_SIMULATE_REQUEST_BTN = true;
-                console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
-                this.showSpinner = false;
-                console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SPINNER ', this.showSpinner)
-              }
+          if ((this.browserRefresh === false) || (this.browserRefresh === true && this.wsRequestsService.wsRequestsList$.value.length > 0)) {
+            if (wsrequests.length > 0) {
 
-            });
+              this.SHOW_SIMULATE_REQUEST_BTN = false;
+              console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
+              this.showSpinner = false;
+              console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SPINNER ', this.showSpinner)
 
+
+            } else if (wsrequests.length === 0) {
+              this.SHOW_SIMULATE_REQUEST_BTN = true;
+              console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
+              this.showSpinner = false;
+              console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SPINNER ', this.showSpinner)
+            }
           }
-
-
-          // console.log('% »»» WebSocketJs WF - WsRequestsList >>>>>>> WS-REQUESTS-LENGHT <<<<<<< ', wsrequests.length)
-
-
-          // if (wsrequests.length > 0) {
-
-          //   this.SHOW_SIMULATE_REQUEST_BTN = false;
-          //   console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
-          //   this.showSpinner = false;
-          //   console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SPINNER ', this.showSpinner)
-
-
-          // } else if (wsrequests.length === 0) {
-          //   this.SHOW_SIMULATE_REQUEST_BTN = true;
-          //   console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SIMULATE_REQUEST_BTN ', this.SHOW_SIMULATE_REQUEST_BTN)
-          //   this.showSpinner = false;
-          //   console.log('% »»» WebSocketJs WF +++++ ws-requests--- list ----- SHOW_SPINNER ', this.showSpinner)
-          // }
 
 
 
           if (this.ONLY_MY_REQUESTS === false) {
             this.ws_requests = wsrequests;
-            // console.log('% »»» WebSocketJs WF - WsRequestsList ONLY_MY_REQUESTS: ', this.ONLY_MY_REQUESTS, ' - this.ws_requests: ', this.ws_requests)
+            // console.log('% »»» WebSocketJs WF +++++ ws-requests--- list - ONLY_MY_REQUESTS: ', this.ONLY_MY_REQUESTS, ' - this.ws_requests: ', this.ws_requests)
           }
 
           if (this.ONLY_MY_REQUESTS === true) {
             this.ws_requests = [];
             wsrequests.forEach(wsrequest => {
-              // console.log('% »»» WebSocketJs WF - WsRequestsList wsrequest ', wsrequest)
+              // console.log('% »»» WebSocketJs WF +++++ ws-requests--- list - ONLY_MY_REQUESTS: ', this.ONLY_MY_REQUESTS, ' - (forEach) wsrequest: ', wsrequest);
 
               // const imInParticipants = this.hasmeInParticipants(wsrequest.participants)
               // console.log("% »»» WebSocketJs - WsRequestsService imInParticipants ", imInParticipants, 'for the request ', wsrequest.participants);
 
               if (wsrequest !== null && wsrequest !== undefined) {
                 // || wsrequest.status === 100
+                // console.log("% »»» WebSocketJs WF +++++ ws-requests--- list - »»» »»» hasmeInAgents ONLY_MY_REQUESTS forEach hasmeInAgents", this.hasmeInAgents(wsrequest.agents, wsrequest));
+
                 if (this.hasmeInAgents(wsrequest.agents, wsrequest) === true || this.hasmeInParticipants(wsrequest.participants) === true) {
 
                   this.ws_requests.push(wsrequest);
@@ -607,7 +651,7 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
               }
             });
 
-            console.log('% »»» WebSocketJs WF - WsRequestsList ONLY_MY_REQUESTS  ', this.ONLY_MY_REQUESTS, 'this.ws_requests', this.ws_requests)
+            // console.log('% »»» WebSocketJs WF +++++ ws-requests--- list - ONLY_MY_REQUESTS  ', this.ONLY_MY_REQUESTS, 'this.ws_requests', this.ws_requests)
           }
 
           var ws_requests_clone = JSON.parse(JSON.stringify(this.ws_requests));
@@ -689,9 +733,6 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
         // console.log('% »»» WebSocketJs WF - WsRequestsList getWsRequests$ ws_request ', wsrequests)
 
 
-
-
-
         // this.ws_requests.forEach(request => {
         this.ws_requests.forEach((request) => {
 
@@ -714,6 +755,8 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
           //  replace this.currentUserID with this.auth.user_bs.value._id  because at the go back from the request's details this.currentUserID at the moment in which is passed in currentUserIdIsInParticipants is undefined 
           request['currentUserIsJoined'] = this.currentUserIdIsInParticipants(request.participants, this.auth.user_bs.value._id, request.request_id);
 
+          // request["test"] = this.createFullParticipacipantsArray(request.participants)
+          // console.log('!! Ws SHARED  (from) »»»»»»» createFullParticipacipantsArray request["test"] ' , request["test"]);
 
           if (request.lead && request.lead.fullname) {
             request['requester_fullname_initial'] = avatarPlaceholder(request.lead.fullname);
@@ -752,6 +795,7 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
          * Sort requests and manage spinner
          */
         if (this.ws_requests) {
+          console.log('% »»» WebSocketJs WF +++++ ws-requests--- list getWsRequests *** ws_requests ***', this.ws_requests);
           this.wsRequestsUnserved = this.ws_requests
             .filter(r => {
               if (r['status'] === 100) {
@@ -792,10 +836,40 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
         } else {
           // this.showSpinner = false;
         }
+        console.log('% »»» WebSocketJs WF +++++ ws-requests--- list getWsRequests (served)', this.wsRequestsServed);
+        console.log('% »»» WebSocketJs WF +++++ ws-requests--- list getWsRequests (unserved)', this.wsRequestsUnserved);
+
+        // var self = this
+        // // https://stackoverflow.com/questions/8267857/how-to-wait-until-array-is-filled-asynchronous
+        // var isFinished = false;
+        // var count = 0 
+        // // if (self.wsRequestsServed !== undefined) {
+        //   var timeout = setInterval(function () {
+        //     count++
+        //     console.log('% »»» WebSocketJs WF +++++ ws-requests--- list getWsRequests$ (served) isFinished ', count);
+        //     if (self.checkIfFinished(self.wsRequestsServed)) {
+        //       console.log('% »»» WebSocketJs WF +++++ ws-requests--- list getWsRequests$ (served) isFinished 2', count);
+        //       clearInterval(timeout);
+        //       isFinished = true;
+        //       console.log('% »»» WebSocketJs WF +++++ ws-requests--- list getWsRequests$ (served) isFinished ', isFinished, 'wsRequestsServed length ', self.wsRequestsServed.length);
+        //     }
+        //   }, 100);
+        // }
+
+
       }, error => {
         console.log('% WsRequestsList getWsRequests$ * error * ', error)
-      });
+      }, () => {
+
+
+        console.log('% »»» WebSocketJs WF +++++ ws-requests--- list getWsRequests */* COMPLETE */*')
+      })
   }
+
+  checkIfFinished(wsRequestsServed) {
+    return (wsRequestsServed.length > 0);
+  }
+
 
   _getWsRequests$() {
     this.wsRequestsService.messages.subscribe((websocketResponse) => {
@@ -866,6 +940,68 @@ export class WsRequestsListComponent extends WsSharedComponent implements OnInit
   }
 
 
+  presentCreateInternalRequestModal() {
+    this.displayInternalRequestModal = 'block'
+    this.hasClickedCreateNewInternalRequest = false;
+  
+  }
+
+  closeInternalRequestModal() {
+    this.displayInternalRequestModal = 'none'
+    this.hasClickedCreateNewInternalRequest = false
+
+    this.resetCreateInternalRequest()
+ 
+  }
+
+
+  createNewInternalRequest() {
+    this.hasClickedCreateNewInternalRequest = true
+    this.showSpinner_createInternalRequest = true
+    console.log('% WsRequestsList create internalRequest - internalRequest_subject ', this.internalRequest_message);
+    console.log('% WsRequestsList create internalRequest - internalRequest_subject ', this.internalRequest_deptId);
+    console.log('% WsRequestsList create internalRequest - internalRequest_subject', this.internalRequest_subject);
+
+
+    const uiid = uuid.v4();
+    // console.log('% WsRequestsList createTicket - UUID', uiid);
+    this.internal_request_id = 'support-group-' + uiid
+    console.log('% WsRequestsList create internalRequest - this.internal_request_id', this.internal_request_id);
+    // (request_id:string, subject: string, message:string, departmentid: string)
+    this.wsRequestsService.createInternalRequest(this.internal_request_id, this.internalRequest_subject, this.internalRequest_message, this.internalRequest_deptId).subscribe((newticket: any) => {
+      console.log('% WsRequestsList create internalRequest - RES ', this.internal_request_id);
+
+
+    }, error => {
+      this.showSpinner_createInternalRequest = false;
+      this.createNewInternalRequest_hasError = true
+      console.log('% WsRequestsList create internalRequest  - ERROR: ', error);
+    }, () => {
+      console.log('% WsRequestsList create internalRequest * COMPLETE *')
+      this.showSpinner_createInternalRequest = false;
+      this.createNewInternalRequest_hasError = false;
+      // this.hasClickedCreateNewInternalRequest = false;
+
+    });
+  }
+
+  openTheChaForInternalRequest() {
+    this.displayInternalRequestModal = 'none'
+    // + '?recipient=' + this.internal_request_id;
+    const url = this.CHAT_BASE_URL 
+    window.open(url, '_blank');
+
+    this.resetCreateInternalRequest();
+  }
+
+  resetCreateInternalRequest() {
+    this.hasClickedCreateNewInternalRequest = false
+    this.showSpinner_createInternalRequest = false
+    this.createNewInternalRequest_hasError = null;
+    this.internalRequest_message = undefined;
+    this.internalRequest_deptId = undefined;
+    this.internalRequest_subject = undefined;
+  }
 
 
 

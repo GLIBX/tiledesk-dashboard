@@ -61,7 +61,8 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     hidechangelogrocket = brand.sidebar__hide_changelog_rocket;
     // background_bottom_section = brand.sidebar.background_bottom_section
 
-    public_Key = environment.t2y12PruGU9wUtEGzBJfolMIgK;
+    // public_Key = environment.t2y12PruGU9wUtEGzBJfolMIgK; // now get from appconfig
+    public_Key: string;
 
     @ViewChild('openchatbtn') private elementRef: ElementRef;
     @ViewChild('homebtn') private homeBtnElement: ElementRef;
@@ -107,8 +108,10 @@ export class SidebarComponent implements OnInit, AfterViewInit {
 
     currentUserId: string
 
-    CHAT_BASE_URL = environment.chat.CHAT_BASE_URL;
-  
+    // CHAT_BASE_URL = environment.chat.CHAT_BASE_URL; // moved
+    // CHAT_BASE_URL = environment.CHAT_BASE_URL; // now get from appconfig
+    CHAT_BASE_URL: string;
+
     userProfileImageExist: boolean;
     userImageHasBeenUploaded: boolean;
     userProfileImageurl: string;
@@ -142,6 +145,7 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     isVisibleGRO: boolean;
     isVisibleDEP: boolean;
     isVisibleOPH: boolean;
+    isVisibleCAR: boolean; // canned responses
 
     storageBucket: string;
 
@@ -204,7 +208,26 @@ export class SidebarComponent implements OnInit, AfterViewInit {
         this.getOSCODE();
         this.getStorageBucket();
         this.brandLog();
+        this.getHasOpenBlogKey()
+        this.getChatUrl();
     }
+
+    getChatUrl() {
+        this.CHAT_BASE_URL = this.appConfigService.getConfig().CHAT_BASE_URL;
+        console.log('AppConfigService getAppConfig (SIDEBAR) CHAT_BASE_URL', this.CHAT_BASE_URL);
+    }
+
+
+
+    getHasOpenBlogKey() {
+        const hasOpenedBlog = this.usersLocalDbService.getStoredChangelogDate();
+        console.log('SIDEBAR  »»»»»»»»» hasOpenedBlog ', hasOpenedBlog);
+        
+        if (hasOpenedBlog === true) {
+            this.hidechangelogrocket = true;
+        }
+
+     }
 
     brandLog() {
         console.log('BRAND_JSON - SIDEBAR ', brand);
@@ -219,6 +242,8 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     }
 
     getOSCODE() {
+        this.public_Key = this.appConfigService.getConfig().t2y12PruGU9wUtEGzBJfolMIgK;
+        console.log('AppConfigService getAppConfig (SIDEBAR) public_Key', this.public_Key);
 
         let keys = this.public_Key.split("-");
         console.log('PUBLIC-KEY (SIDEBAR) - public_Key keys', keys)
@@ -226,98 +251,106 @@ export class SidebarComponent implements OnInit, AfterViewInit {
         keys.forEach(key => {
             // console.log('NavbarComponent public_Key key', key)
             if (key.includes("ANA")) {
-                console.log('PUBLIC-KEY (SIDEBAR) - key', key);
+                // console.log('PUBLIC-KEY (SIDEBAR) - key', key);
                 let ana = key.split(":");
-                console.log('PUBLIC-KEY (SIDEBAR) - ana key&value', ana);
+                // console.log('PUBLIC-KEY (SIDEBAR) - ana key&value', ana);
 
                 if (ana[1] === "F") {
                     this.isVisibleANA = false;
-                    console.log('PUBLIC-KEY (SIDEBAR) - ana isVisible', this.isVisibleANA);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - ana isVisible', this.isVisibleANA);
                 } else {
                     this.isVisibleANA = true;
-                    console.log('PUBLIC-KEY (SIDEBAR) - ana isVisible', this.isVisibleANA);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - ana isVisible', this.isVisibleANA);
                 }
             }
 
             if (key.includes("ACT")) {
-                console.log('PUBLIC-KEY (SIDEBAR) - key', key);
+                // console.log('PUBLIC-KEY (SIDEBAR) - key', key);
                 let act = key.split(":");
-                console.log('PUBLIC-KEY (SIDEBAR) - act key&value', act);
+                // console.log('PUBLIC-KEY (SIDEBAR) - act key&value', act);
 
                 if (act[1] === "F") {
                     this.isVisibleACT = false;
-                    console.log('PUBLIC-KEY (SIDEBAR) - act isVisible', this.isVisibleACT);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - act isVisible', this.isVisibleACT);
                 } else {
                     this.isVisibleACT = true;
-                    console.log('PUBLIC-KEY (SIDEBAR) - act isVisible', this.isVisibleACT);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - act isVisible', this.isVisibleACT);
                 }
             }
 
             if (key.includes("TRI")) {
-                console.log('PUBLIC-KEY (SIDEBAR) - key', key);
+                // console.log('PUBLIC-KEY (SIDEBAR) - key', key);
                 let tri = key.split(":");
-                console.log('PUBLIC-KEY (SIDEBAR) - tri key&value', tri);
+                // console.log('PUBLIC-KEY (SIDEBAR) - tri key&value', tri);
 
                 if (tri[1] === "F") {
                     this.isVisibleTRI = false;
-                    console.log('PUBLIC-KEY (SIDEBAR) - tri isVisible', this.isVisibleTRI);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - tri isVisible', this.isVisibleTRI);
                 } else {
                     this.isVisibleTRI = true;
-                    console.log('PUBLIC-KEY (SIDEBAR) - tri isVisible', this.isVisibleTRI);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - tri isVisible', this.isVisibleTRI);
                 }
             }
 
             if (key.includes("GRO")) {
-                console.log('PUBLIC-KEY (SIDEBAR) - key', key);
+                // console.log('PUBLIC-KEY (SIDEBAR) - key', key);
                 let gro = key.split(":");
-                console.log('PUBLIC-KEY (SIDEBAR) - gro key&value', gro);
+                // console.log('PUBLIC-KEY (SIDEBAR) - gro key&value', gro);
 
                 if (gro[1] === "F") {
                     this.isVisibleGRO = false;
-                    console.log('PUBLIC-KEY (SIDEBAR) - gro isVisible', this.isVisibleGRO);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - gro isVisible', this.isVisibleGRO);
                 } else {
                     this.isVisibleGRO = true;
-                    console.log('PUBLIC-KEY (SIDEBAR) - gro isVisible', this.isVisibleGRO);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - gro isVisible', this.isVisibleGRO);
                 }
             }
 
             if (key.includes("DEP")) {
-                console.log('PUBLIC-KEY (SIDEBAR) - key', key);
+                // console.log('PUBLIC-KEY (SIDEBAR) - key', key);
                 let dep = key.split(":");
-                console.log('PUBLIC-KEY (SIDEBAR) - dep key&value', dep);
+                // console.log('PUBLIC-KEY (SIDEBAR) - dep key&value', dep);
 
                 if (dep[1] === "F") {
                     this.isVisibleDEP = false;
-                    console.log('PUBLIC-KEY (SIDEBAR) - dep isVisible', this.isVisibleDEP);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - dep isVisible', this.isVisibleDEP);
                 } else {
                     this.isVisibleDEP = true;
-                    console.log('PUBLIC-KEY (SIDEBAR) - dep isVisible', this.isVisibleDEP);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - dep isVisible', this.isVisibleDEP);
                 }
             }
 
             if (key.includes("OPH")) {
-                console.log('PUBLIC-KEY (SIDEBAR) - key', key);
+                // console.log('PUBLIC-KEY (SIDEBAR) - key', key);
                 let oph = key.split(":");
-                console.log('PUBLIC-KEY (SIDEBAR) - oph key&value', oph);
+                // console.log('PUBLIC-KEY (SIDEBAR) - oph key&value', oph);
 
                 if (oph[1] === "F") {
                     this.isVisibleOPH = false;
-                    console.log('PUBLIC-KEY (SIDEBAR) - oph isVisible', this.isVisibleOPH);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - oph isVisible', this.isVisibleOPH);
                 } else {
                     this.isVisibleOPH = true;
-                    console.log('PUBLIC-KEY (SIDEBAR) - oph isVisible', this.isVisibleOPH);
+                    // console.log('PUBLIC-KEY (SIDEBAR) - oph isVisible', this.isVisibleOPH);
                 }
+            }
+
+            if (key.includes("CAR")) {
+                console.log('PUBLIC-KEY (SIDEBAR) - key', key);
+                let car = key.split(":");
+                console.log('PUBLIC-KEY (SIDEBAR) - car key&value', car);
+
+                if (car[1] === "F") {
+                    this.isVisibleCAR = false;
+                    console.log('PUBLIC-KEY (SIDEBAR) - car isVisible', this.isVisibleCAR);
+                } else {
+                    this.isVisibleCAR = true;
+                    console.log('PUBLIC-KEY (SIDEBAR) - car isVisible', this.isVisibleCAR);
+                }
+            } else {
+                this.isVisibleCAR = false;
             }
         });
 
-        // console.log('eoscode', this.eos)
-        // if (this.eos && this.eos === publicKey) {
-        //     this.isVisible = true;
-        //     console.log('eoscode isVisible ', this.isVisible);
-        // } else {
-        //     this.isVisible = false;
-        //     console.log('eoscode isVisible ', this.isVisible);
-        // }
     }
 
 
@@ -490,7 +523,11 @@ export class SidebarComponent implements OnInit, AfterViewInit {
         console.log('SB - CHANGE STATUS - PROJECT USER ID: ', this.projectUser_id);
 
 
-        this.usersService.updateProjectUser(this.projectUser_id, IS_AVAILABLE).subscribe((projectUser: any) => {
+        // this.usersService.updateProjectUser(this.projectUser_id, IS_AVAILABLE).subscribe((projectUser: any) => {
+        // DONE - WORKS NK-TO-TEST - da implementare quando viene implementato il servizio - serve per cambiare lo stato di disponibilità dell'utente corrente
+        // anche in USER & GROUP bisogna cambiare per la riga dell'utente corrente   
+        this.usersService.updateCurrentUserAvailability(IS_AVAILABLE).subscribe((projectUser: any) => { // non 
+
             console.log('PROJECT-USER UPDATED ', projectUser)
 
             // NOTIFY TO THE USER SERVICE WHEN THE AVAILABLE / UNAVAILABLE BUTTON IS CLICKED
@@ -615,11 +652,9 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     }
 
     round5(x) {
-
         // const percentageRounded = Math.ceil(x / 5) * 5;
         // console.log('SIDEBAR project trial days left % rounded', percentageRounded);
         // return Math.ceil(x / 5) * 5;
-
         return x % 5 < 3 ? (x % 5 === 0 ? x : Math.floor(x / 5) * 5) : Math.ceil(x / 5) * 5
     }
 
@@ -709,9 +744,6 @@ export class SidebarComponent implements OnInit, AfterViewInit {
     }
 
 
-
-
-
     isMobileMenu() {
         if ($(window).width() > 991) {
             this.IS_MOBILE_MENU = false
@@ -747,25 +779,41 @@ export class SidebarComponent implements OnInit, AfterViewInit {
 
     stopScroll() {
         // const el = <HTMLElement>document.querySelector('.sidebar-wrapper');
-        // console.log('SIDEBAR SCROLL TO', this.scrollpos);
-        // console.log('SIDEBAR SCROLL TO elSidebarWrapper ', this.elSidebarWrapper)
+        console.log('SIDEBAR SCROLL TO', this.scrollpos);
+        console.log('SIDEBAR SCROLL TO elSidebarWrapper ', this.elSidebarWrapper)
+
+        // const oh = <HTMLElement>document.querySelector('.oh');
+        // console.log('SIDEBAR SCROLL TO operating hours ', oh)
+        // oh.scrollIntoView();
 
         if (this.elSidebarWrapper) {
+
             this.elSidebarWrapper.scrollTop = this.scrollpos;
+            // this.elSidebarWrapper.scrollTo(0,242)
         }
-      
     }
+
+    onEvent($event) {
+        console.log('SIDEBAR SCROLL event ', $event);
+        event.stopPropagation();
+    }
+
 
     goToHome() {
         this.router.navigate(['/project/' + this.projectId + '/home']);
     }
+    // goToOperatingHours() {
+    //     this.router.navigate(['/project/' + this.projectId + '/hours']);
+    // }
+
 
     goToBlogChangelog() {
         const url = 'https://www.tiledesk.com/category/changelog/';
         window.open(url, '_blank');
+
+        this.usersLocalDbService.savChangelogDate()
+        this.hidechangelogrocket = true;
     }
-
-
 
     goToProjects() {
         console.log('SIDEBAR IS MOBILE -  HAS CLICCKED GO TO PROJECT  ')

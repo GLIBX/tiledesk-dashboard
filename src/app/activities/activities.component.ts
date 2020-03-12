@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { UsersService } from '../services/users.service';
 import { AuthService } from '../core/auth.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -10,13 +10,16 @@ import { BotLocalDbService } from '../services/bot-local-db.service';
 
 import 'moment/locale/it.js';
 import 'moment/locale/en-gb.js';
+import { Subscription } from 'rxjs/Subscription';
+
+
 @Component({
   selector: 'appdashboard-activities',
   templateUrl: './activities.component.html',
   styleUrls: ['./activities.component.scss']
 })
 
-export class ActivitiesComponent implements OnInit {
+export class ActivitiesComponent implements OnInit, OnDestroy {
   @ViewChild('searchbtn') private searchbtnRef: ElementRef;
   @ViewChild('clearsearchbtn') private clearsearchbtnRef: ElementRef;
   @ViewChild('exportcsvbtn') private exportcsvbtnRef: ElementRef;
@@ -60,6 +63,7 @@ export class ActivitiesComponent implements OnInit {
   agentInvitation: string;
   newRequest: string;
   asc: any;
+  subscription: Subscription;
 
   constructor(
     private usersService: UsersService,
@@ -81,6 +85,11 @@ export class ActivitiesComponent implements OnInit {
     this.getAllProjectUsers();
     this.buildActivitiesOptions();
     // this.getProjectUsers();
+  }
+
+  ngOnDestroy() {
+    console.log('% »»» WebSocketJs WF +++++ ws-requests--- activities ngOnDestroy')
+    this.subscription.unsubscribe();
   }
 
   buildActivitiesOptions() {
@@ -141,7 +150,7 @@ export class ActivitiesComponent implements OnInit {
   }
 
   getCurrentProject() {
-    this.auth.project_bs.subscribe((project) => {
+    this.subscription = this.auth.project_bs.subscribe((project) => {
       if (project) {
         this.projectId = project._id
         console.log('ActivitiesComponent - projectId ', this.projectId)
@@ -381,12 +390,36 @@ export class ActivitiesComponent implements OnInit {
                     console.log('ActivitiesComponent participant ', participantId);
 
                     if (participantId.includes('bot_')) {
-                      console.log('ActivitiesComponent participant includes bot', participantId);
+                      console.log('ActivitiesComponent participant includes bot with id ', participantId);
                       const bot_id = participantId.slice(4);
-                      const bot = this.botLocalDbService.getBotFromStorage(bot_id);
-                      console.log('ActivitiesComponent participant bot', bot);
+                      console.log('ActivitiesComponent participant includes bot with id slice(4)', bot_id);
 
-                      activity.participant_fullname = bot.name + ' (bot)'
+                      let bot: any
+
+                      setTimeout(() => {
+                        bot = this.botLocalDbService.getBotFromStorage(bot_id);
+                        console.log('ActivitiesComponent participant bot', bot);
+                        if (bot) {
+                          let botType = "";
+                          if (bot.type === 'internal') {
+
+                            botType = 'native'
+                          } else {
+                            botType = bot.type
+                          }
+                          activity.participant_fullname = bot.name + ` (${botType} bot)`
+                          console.log('ActivitiesComponent participant bot name', activity.participant_fullname);
+                        }
+                      }, 50);
+
+
+                      // const bot2 = JSON.parse((localStorage.getItem(bot_id)));
+                      // console.log('ActivitiesComponent participant bot2', bot2);
+
+                      // const bot3 = localStorage.getItem(bot_id);
+                      // console.log('ActivitiesComponent participant bot3', bot3);
+
+
                     } else {
 
                       const user = this.usersLocalDbService.getMemberFromStorage(participantId);
@@ -406,10 +439,7 @@ export class ActivitiesComponent implements OnInit {
                     // });
                   }
                 }
-
               }
-
-
             });
           }
         }
@@ -438,14 +468,31 @@ export class ActivitiesComponent implements OnInit {
     this.getActivities();
   }
 
-  goToMemberProfile(member_id: any) {
-    console.log('has clicked GO To MEMBER ', member_id);
-    this.router.navigate(['project/' + this.projectId + '/member/' + member_id]);
+  goToMemberProfile(participantId: any) {
+    if (participantId.includes('bot_')) {
+      const bot_id = participantId.slice(4);
+      const bot = this.botLocalDbService.getBotFromStorage(bot_id);
+
+      let botType = ''
+      if (bot.type === 'internal') {
+        botType = 'native'
+      } else {
+        botType = bot.type
+      }
+
+      this.router.navigate(['project/' + this.projectId + '/bots', bot_id, botType]);
+
+    } else {
+
+      console.log('has clicked GO To MEMBER ', participantId);
+      this.router.navigate(['project/' + this.projectId + '/member/' + participantId]);
+    }
+
   }
 
   goToRequestDetails(request_id) {
     console.log('has clicked GO To REQUEST DETAILS ', request_id);
-    this.router.navigate(['project/' + this.projectId + '/request/' + request_id + '/messages']);
+    this.router.navigate(['project/' + this.projectId + '/wsrequest/' + request_id + '/messages']);
 
   }
 }

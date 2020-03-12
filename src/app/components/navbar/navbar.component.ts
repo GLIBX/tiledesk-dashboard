@@ -1,5 +1,5 @@
 // tslint:disable:max-line-length
-import { Component, OnInit, ElementRef, AfterContentChecked, AfterViewInit, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, ElementRef, AfterContentChecked, AfterViewInit, AfterViewChecked, OnDestroy } from '@angular/core';
 // import { ROUTES } from '../sidebar/sidebar.component';
 import { Location, LocationStrategy, PathLocationStrategy } from '@angular/common';
 import { AuthService } from '../../core/auth.service';
@@ -29,19 +29,21 @@ import brand from 'assets/brand/brand.json';
 import { environment } from '../../../environments/environment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators'
+import { Subscription } from 'rxjs/Subscription';
 
 @Component({
     selector: 'app-navbar',
     templateUrl: './navbar.component.html',
     styleUrls: ['./navbar.component.scss']
 })
-export class NavbarComponent implements OnInit, AfterViewInit, AfterContentChecked, AfterViewChecked {
+export class NavbarComponent implements OnInit, AfterViewInit, AfterContentChecked, OnDestroy, AfterViewChecked {
 
     // used to unsuscribe from behaviour subject
     private unsubscribe$: Subject<any> = new Subject<any>();
 
     tparams = brand;
-    public_Key = environment.t2y12PruGU9wUtEGzBJfolMIgK;
+    // public_Key = environment.t2y12PruGU9wUtEGzBJfolMIgK; // now get from appconfig
+    public_Key: string;
 
     private listTitles: any[];
     location: Location;
@@ -80,7 +82,11 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
     HIDE_PENDING_EMAIL_NOTIFICATION = true;
 
     DETECTED_USER_PROFILE_PAGE = false;
-    CHAT_BASE_URL = environment.chat.CHAT_BASE_URL;
+    
+    // CHAT_BASE_URL = environment.chat.CHAT_BASE_URL; // moved
+    // CHAT_BASE_URL = environment.CHAT_BASE_URL; // now get from appconfig
+    CHAT_BASE_URL: string;
+
     displayLogoutModal = 'none';
 
     APP_IS_DEV_MODE: boolean;
@@ -109,6 +115,8 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
 
     storageBucket: string;
     currentUserId: string;
+    subscription: Subscription;
+    ROLE_IS_AGENT: boolean;
     constructor(
         location: Location,
         private element: ElementRef,
@@ -137,6 +145,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
 
     ngOnInit() {
         this.getCurrentProject();
+        this.getProjectUserRole();
         // tslint:disable-next-line:no-debugger
         // debugger
         // this.listTitles = ROUTES.filter(listTitle => listTitle);
@@ -150,8 +159,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
 
         this.updateUnservedRequestCount();
         this.updateCurrentUserRequestCount();
-
-        this.notifyLastUnservedRequest();
+        this.notifyLastUnservedAndCurrentUserRequest();
 
         this.checkRequestStatusInShown_requests();
 
@@ -187,14 +195,40 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
         this.listenCancelSubscription();
         this.getIfIsCreatedNewProject();
 
-
+        this.getChatUrl();
         this.getOSCODE();
         this.getStorageBucket();
     } // OnInit
 
+
+
+    getChatUrl() {
+        this.CHAT_BASE_URL = this.appConfigService.getConfig().CHAT_BASE_URL;
+        console.log('AppConfigService getAppConfig (NAVBAR) CHAT_BASE_URL', this.CHAT_BASE_URL);
+    }
+
+    getProjectUserRole() {
+        this.usersService.project_user_role_bs
+            .pipe(
+                takeUntil(this.unsubscribe$)
+            )
+            .subscribe((user_role) => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar - USER ROLE ', user_role);
+                if (user_role) {
+                    if (user_role === 'agent') {
+                        this.ROLE_IS_AGENT = true
+
+                    } else {
+                        this.ROLE_IS_AGENT = false
+
+                    }
+                }
+            });
+    }
+
     ngOnDestroy() {
         console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar ≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥≥ ngOnDestroy')
-
+        this.subscription.unsubscribe();
         this.unsubscribe$.next();
         this.unsubscribe$.complete();
     }
@@ -207,7 +241,8 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
     }
 
     getOSCODE() {
-
+        this.public_Key = this.appConfigService.getConfig().t2y12PruGU9wUtEGzBJfolMIgK;
+        console.log('AppConfigService getAppConfig (NAVBAR) public_Key', this.public_Key)
         console.log('NavbarComponent public_Key', this.public_Key)
 
         let keys = this.public_Key.split("-");
@@ -300,7 +335,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
         })
     }
 
-
     checkUserImageExist() {
         this.usersService.userProfileImageExist.subscribe((image_exist) => {
             console.log('NAVBAR - USER PROFILE EXIST ? ', image_exist);
@@ -329,16 +363,10 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
 
     getUserProfileImage() {
         if (this.timeStamp) {
-
             return this.userProfileImageurl + '&' + this.timeStamp;
-
-
-
         }
         return this.userProfileImageurl
     }
-
-
 
     getActiveRoute() {
         // this.router.events.subscribe((val) => {
@@ -425,7 +453,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                 //     // this.DETECTED_SIGNUP_PAGE = false;
                 //     this.HIDE_PENDING_EMAIL_NOTIFICATION = false;
                 // }
-
             }
         });
     }
@@ -517,7 +544,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                         this.prjct_profile_name = projectProfileData.profile_name + ' Plan';
                     }
                 }
-
             }
         })
     }
@@ -572,7 +598,6 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
 
             // GET ALL PROJECTS WHEN IS PUBLISHED THE USER
             if (this.user) {
-
                 this.currentUserId = this.user._id;
                 this.getProjects();
             }
@@ -582,39 +607,38 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
     getIfIsCreatedNewProject() {
         this.projectService.hasCreatedNewProject$.subscribe((hasCreatedNewProject) => {
             console.log('»»» »»» getIfIsCreatedNewProject hasCreatedNewProject', hasCreatedNewProject)
-
             if (hasCreatedNewProject) {
                 this.getProjects();
             }
-
         })
     }
 
 
     goToProjects() {
         console.log('HAS CLICCKED GO TO PROJECT ')
-
-        this.unsubscribe$.next();
-        this.unsubscribe$.complete();
-
         this.router.navigate(['/projects']);
         // (in AUTH SERVICE ) RESET PROJECT_BS AND REMOVE ITEM PROJECT FROM STORAGE WHEN THE USER GO TO PROJECTS PAGE
         this.auth.hasClickedGoToProjects();
 
         this.project = null
+
+        // this.subscription.unsubscribe();
+        // this.unsubscribe$.next();
+        // this.unsubscribe$.complete();
+
         console.log('!!C-U 00 -> NAVBAR project AFTER GOTO PROJECTS ', this.project)
-
-
     }
 
+    // WHEN A USER CLICK ON A PROJECT IN THE NAVBAR DROPDOWN 
     goToHome(id_project: string, project_name: string) {
-
+        console.log('!NAVBAR  goToHome id_project ', id_project, 'project_name', project_name)
         // RUNS ONLY IF THE THE USER CLICK OVER A PROJECT WITH THE ID DIFFERENT FROM THE CURRENT PROJECT ID
         if (id_project !== this.projectId) {
-            this.router.navigate([`/project/${id_project}/home`]);
+            // this.subscription.unsubscribe();
+            // this.unsubscribe$.next();
+            // this.unsubscribe$.complete();
 
-            this.unsubscribe$.next();
-            this.unsubscribe$.complete();
+            this.router.navigate([`/project/${id_project}/home`]);
 
             // WHEN THE USER SELECT A PROJECT ITS ID and NAME IS SEND IN THE AUTH SERVICE THAT PUBLISHES IT
             const project: Project = {
@@ -626,6 +650,14 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
         }
     }
 
+
+    goToCreateProject() {
+        this.router.navigate(['/create-new-project']);
+        this.subscription.unsubscribe();
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
+    }
+
     goToUserProfile() {
         console.log('»»» »»» NAVBAR GO TO USER PROFILE ', this.project)
         if (this.project) {
@@ -634,15 +666,20 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
         }
     }
 
-    goToCreateProject() {
-        this.router.navigate(['/create-new-project']);
-    }
 
+    hasmeInAgents(agents) {
+        for (let j = 0; j < agents.length; j++) {
+
+            if (this.currentUserId === agents[j].id_user) {
+                return true
+            }
+        }
+    }
 
     // NEW
     updateUnservedRequestCount() {
         // this.requestsService.requestsList_bs.subscribe((requests) => {
-        this.wsRequestsService.wsRequestsList$
+        this.subscription = this.wsRequestsService.wsRequestsList$
             .pipe(
                 takeUntil(this.unsubscribe$)
             )
@@ -651,19 +688,29 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                 if (requests) {
                     let count = 0;
                     requests.forEach(r => {
-                        // if (r.support_status === 100) {
-                        if (r.status === 100) {
+
+                        // *bug fix: when the user is an agent also for the unserved we have to consider if he is present in agents
+                        if (r.status === 100 && this.ROLE_IS_AGENT === true) {
+                            if (this.hasmeInAgents(r.agents) === true) {  // new *bug fix
+                                count = count + 1;
+                            }
+                        }
+                        if (r.status === 100 && this.ROLE_IS_AGENT === false) {
                             count = count + 1;
                         }
                     });
                     this.unservedRequestCount = count;
                 }
-            });
+            }, error => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar updateUnservedRequestCount * error * ', error)
+            }, () => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar updateUnservedRequestCount */* COMPLETE */*')
+            })
     }
 
     updateCurrentUserRequestCount() {
         // this.requestsService.requestsList_bs.subscribe((requests) => {
-        this.wsRequestsService.wsRequestsList$
+        this.subscription = this.wsRequestsService.wsRequestsList$
             .pipe(
                 takeUntil(this.unsubscribe$)
             )
@@ -674,20 +721,24 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
 
                         // const membersArray = Object.keys(r.members);
                         const participantsArray = r.participants // new used with ws 
-                        // console.log('»» WIDGET notifyLastUnservedRequest REQUEST currentUserRequestCount membersArray ', membersArray);
+                        // console.log('»» WIDGET updateCurrentUserRequestCount REQUEST currentUserRequestCount membersArray ', membersArray);
 
-                        // const currentUserIsInMembers = membersArray.includes(this.user._id);
-                        const currentUserIsInMembers = participantsArray.includes(this.user._id); // new used with ws 
+                        // const currentUserIsInParticipants = membersArray.includes(this.user._id);
+                        const currentUserIsInParticipants = participantsArray.includes(this.user._id); // new used with ws 
 
-                        // console.log('»» WIDGET notifyLastUnservedRequest REQUEST currentUserRequestCount currentUserIsInMembers ', currentUserIsInMembers);
-                        if (currentUserIsInMembers === true) {
+                        // console.log('»» WIDGET updateCurrentUserRequestCount REQUEST currentUserRequestCount currentUserIsInParticipants ', currentUserIsInParticipants);
+                        if (currentUserIsInParticipants === true) {
                             count = count + 1;
                         }
                     });
                     this.currentUserRequestCount = count;
                     // console.log('»» NAVBAR notifyLastUnservedRequest REQUEST currentUserRequestCount ', this.currentUserRequestCount);
                 }
-            });
+            }, error => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar updateCurrentUserRequestCount * error * ', error)
+            }, () => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar updateCurrentUserRequestCount */* COMPLETE */*')
+            })
 
     }
 
@@ -698,7 +749,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
     checkRequestStatusInShown_requests() {
         console.log('»» NAVBAR shown_requests object ', this.shown_requests)
         // this.requestsService.requestsList_bs.subscribe((requests) => {
-        this.wsRequestsService.wsRequestsList$
+        this.subscription = this.wsRequestsService.wsRequestsList$
             .pipe(
                 takeUntil(this.unsubscribe$)
             )
@@ -713,16 +764,20 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                         }
                     });
                 }
-            });
+            }, error => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar checkRequestStatusInShown_requests * error * ', error)
+            }, () => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar checkRequestStatusInShown_requests */* COMPLETE */*')
+            })
     }
 
-    /*** from 14 feb are displayed also the request assigned to the current user */
+    /*** from 14 feb 19 are displayed also the request assigned to the current user */
     // NOTE: ARE DISPLAYED IN THE NOTIFICATION ONLY THE UNSERVED REQUEST (support_status = 100)
     // THAT ARE NOT FOUND (OR HAVE THE VALUE FALSE) IN THE LOCAL DICTIONARY shown_requests
     // FURTHERMORE THE NOTICATIONS WILL NOT BE DISPLAYED IF THE USER OBJECT IS NULL (i.e THERE ISN'T USER LOGGED IN)
-    notifyLastUnservedRequest() {
+    notifyLastUnservedAndCurrentUserRequest() {
         // this.requestsService.requestsList_bs.subscribe((requests) => {
-        this.wsRequestsService.wsRequestsList$
+        this.subscription = this.wsRequestsService.wsRequestsList$
             .pipe(
                 takeUntil(this.unsubscribe$)
             )
@@ -744,51 +799,26 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                         // console.log('% »»» WebSocketJs WF - Navbar participantsArray ', participantsArray);
 
                         // const currentUserIsInMembers = membersArray.includes(this.user._id);  // old used with firestore 
-                        const currentUserIsInMembers = participantsArray.includes(this.user._id); // new used with ws 
-                        // console.log('»» WIDGET notifyLastUnservedRequest REQUEST currentUserIsInMembers ', currentUserIsInMembers);
+                        const currentUserIsInParticipants = participantsArray.includes(this.user._id); // new used with ws 
+                        console.log('»» WIDGET notifyLastUnservedRequest REQUEST currentUserIsInParticipants ', currentUserIsInParticipants);
 
                         // if (r.support_status === 100 && !this.shown_requests[r.id] && this.user !== null) { // old used with firestore 
                         if (r.status === 100 && !this.shown_requests[r.id] && this.user !== null) {
 
-                            // const requestCreationDate = moment(r.created_on);
-                            const requestCreationDate = moment(r.createdAt);
+                            // *bug fix: when the user is an agent also for the unserved we have to consider if he is present in agents
+                            if (this.ROLE_IS_AGENT === true) {
+                                if (this.hasmeInAgents(r.agents) === true) {
 
-                            // console.log('notifyLastUnservedRequest REQUEST', r);
-                            // console.log('notifyLastUnservedRequest REQUEST ID', r.id, ' CREATED AT ', requestCreationDate);
-                            // const today = new Date();
-                            const currentTime = moment();
-                            // console.log('notifyLastUnservedRequest REQUEST TODAY ', currentTime);
+                                    this.doUnservedDateDiffAndShowNotification(r)
 
-                            const dateDiff = currentTime.diff(requestCreationDate, 'h');
-                            // console.log('»» WIDGET notifyLastUnservedRequest DATE DIFF ', dateDiff);
-
-                            /**
-                             * *** NEW 29JAN19: the unserved requests notifications are not displayed if it is older than one day ***
-                             */
-                            if (dateDiff < 24) {
-
-                                // this.lastRequest = requests[requests.length - 1];
-                                // console.log('!!! »»» LAST UNSERVED REQUEST ', this.lastRequest)
-
-                                // console.log('!!! »»» UNSERVED REQUEST IN BOOTSTRAP NOTIFY ', r)
-                                // const url = '#/project/' + this.projectId + '/request/' + r.id + '/messages'
-                                const url = '#/project/' + this.projectId + '/wsrequest/' + r.request_id + '/messages'
-                                this.showNotification(
-                                    '<span style="font-weight: 400; font-family: Google Sans, sans-serif;color:#2d323e!important">' + r.lead.fullname + '</span>' +
-                                    '<em style="font-family: Google Sans, sans-serif;color:#7695a5!important">' + r.first_text +
-                                    '</em>' + `<a href="${url}" target="_self" data-notify="url" style="height: 100%; left: 0px; position: absolute; top: 0px; width: 100%; z-index: 1032;"></a>`,
-                                    3,
-                                    'border-left-color: rgb(237, 69, 55)',
-                                    'new-chat-icon-unserved.png'
-                                );
-
-                                this.shown_requests[r.id] = true;
-                                console.log('»» NAVBAR shown_requests object notifyLastUnservedRequest ', this.shown_requests)
-                                // r.notification_already_shown = true;
+                                }
+                            } else {
+                                this.doUnservedDateDiffAndShowNotification(r)
                             }
                         }
 
-                        if (this.user !== null && !this.shown_my_requests[r.id] && currentUserIsInMembers === true) {
+                        // if current user is in particioants means that is a request served by the current user
+                        if (this.user !== null && !this.shown_my_requests[r.id] && currentUserIsInParticipants === true) {
 
                             // const requestCreationDate = moment(r.created_on);
                             const requestCreationDate = moment(r.createdAt);
@@ -796,7 +826,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                             const currentTime = moment();
 
                             const dateDiff = currentTime.diff(requestCreationDate, 'h');
-                            // console.log('»» WIDGET notifyLastUnservedRequest currentUserIsInMembers DATE DIFF ', dateDiff);
+                            // console.log('»» WIDGET notifyLastUnservedRequest currentUserIsInParticipants DATE DIFF ', dateDiff);
 
                             if (dateDiff < 24) {
                                 // const url = '#/project/' + this.projectId + '/request/' + r.id + '/messages'
@@ -819,7 +849,7 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                                 );
 
                                 this.shown_my_requests[r.id] = true;
-                                console.log('»» NAVBAR shown_my_requests object notifyLastUnservedRequest ', this.shown_my_requests)
+                                // console.log('»» NAVBAR shown_my_requests object notifyLastUnservedRequest ', this.shown_my_requests)
                                 // this.shown_my_requests[r.request_id] = true;
 
                             }
@@ -828,7 +858,54 @@ export class NavbarComponent implements OnInit, AfterViewInit, AfterContentCheck
                     });
                     // this.unservedRequestCount = count;
                 }
-            });
+            }, error => {
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar notifyLastUnservedRequest * error * ', error)
+            }, () => {
+
+
+                console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar notifyLastUnservedRequest */* COMPLETE */*')
+            })
+    }
+
+    doUnservedDateDiffAndShowNotification(r) {
+        // const requestCreationDate = moment(r.created_on);
+        const requestCreationDate = moment(r.createdAt);
+
+        // console.log('notifyLastUnservedRequest REQUEST', r);
+        // console.log('notifyLastUnservedRequest REQUEST ID', r.id, ' CREATED AT ', requestCreationDate);
+        // const today = new Date();
+        const currentTime = moment();
+        // console.log('notifyLastUnservedRequest REQUEST TODAY ', currentTime);
+
+        const dateDiff = currentTime.diff(requestCreationDate, 'h');
+        // console.log('»» WIDGET notifyLastUnservedRequest DATE DIFF ', dateDiff);
+
+        /**
+         * *** NEW 29JAN19: the unserved requests notifications are not displayed if it is older than one day ***
+         */
+        if (dateDiff < 24) {
+
+            // this.lastRequest = requests[requests.length - 1];
+            // console.log('!!! »»» LAST UNSERVED REQUEST ', this.lastRequest)
+
+            // console.log('!!! »»» UNSERVED REQUEST IN BOOTSTRAP NOTIFY ', r)
+            // const url = '#/project/' + this.projectId + '/request/' + r.id + '/messages'
+            const url = '#/project/' + this.projectId + '/wsrequest/' + r.request_id + '/messages'
+            console.log('% »»» WebSocketJs WF +++++ ws-requests--- navbar unserved request url ', url);
+            this.showNotification(
+                '<span style="font-weight: 400; font-family: Google Sans, sans-serif;color:#2d323e!important">' + r.lead.fullname + '</span>' +
+                '<em style="font-family: Google Sans, sans-serif;color:#7695a5!important">' + r.first_text +
+                '</em>' + `<a href="${url}" target="_self" data-notify="url" style="height: 100%; left: 0px; position: absolute; top: 0px; width: 100%; z-index: 1032;"></a>`,
+                3,
+                'border-left-color: rgb(237, 69, 55)',
+                'new-chat-icon-unserved.png'
+            );
+
+            this.shown_requests[r.id] = true;
+            // console.log('»» NAVBAR shown_requests object notifyLastUnservedRequest ', this.shown_requests)
+            // r.notification_already_shown = true;
+        }
+
     }
 
 

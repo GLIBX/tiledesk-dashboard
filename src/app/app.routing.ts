@@ -16,8 +16,6 @@ import { AuthGuard } from './core/auth.guard';
 import { AdminGuard } from './core/admin.guard';
 import { ProjectProfileGuard } from './core/project-profile.guard';
 import { CoreModule } from './core/core.module';
-
-
 import { ReadmePageComponent } from './ui/readme-page/readme-page.component';
 import { HomeComponent } from './home/home.component';
 
@@ -28,28 +26,22 @@ import { RequestsListComponent } from './requests-list/requests-list.component';
 /*** WEBSOCKET ***/
 import { WsRequestsListComponent } from './ws_requests/ws-requests-list/ws-requests-list.component';
 import { WsRequestsMsgsComponent } from './ws_requests/ws-requests-msgs/ws-requests-msgs.component';
-
-
-
 import { DepartmentsComponent } from './departments/departments.component';
 import { DepartmentEditAddComponent } from './department-edit-add/department-edit-add.component';
-
-import { BotsComponent } from './bots/bots.component';
 import { ProjectsComponent } from './projects/projects.component';
 import { UsersComponent } from './users/users.component';
 
-// FAQ
-import { FaqComponent } from './faq/faq.component';
-import { FaqEditAddComponent } from './faq-edit-add/faq-edit-add.component';
-import { FaqKbComponent } from './faq-kb/faq-kb.component';
-import { FaqKbEditAddComponent } from './faq-kb-edit-add/faq-kb-edit-add.component';
-
-import { BotEditAddComponent } from './bot-edit-add/bot-edit-add.component';
+// BOTS & FAQ
+import { BotListComponent } from './bots/bots-list/bots-list.component';
+import { BotTypeSelectComponent } from './bots/bot-create/bot-type-select/bot-type-select.component';
+import { BotCreateComponent } from './bots/bot-create/bot-create.component';
+import { FaqComponent } from './bots/faq/faq.component';
+import { FaqEditAddComponent } from './bots/faq-edit-add/faq-edit-add.component';
+import { FaqTestComponent } from './bots/faq-test/faq-test.component';
 
 import { ProjectEditAddComponent } from './project-edit-add/project-edit-add.component';
 // import { RequestsListHistoryComponent } from './requests-list-history/requests-list-history.component';
 import { RequestsListHistoryNewComponent } from './requests-list-history-new/requests-list-history-new.component';
-
 
 // AUTH PAGES
 import { SigninComponent } from './auth/signin/signin.component';
@@ -66,20 +58,15 @@ import { ScriptComponent } from './script/script.component';
 import { ChannelsComponent } from './channels/channels.component';
 import { SocialComponent } from './social/social.component';
 
-import { FaqTestComponent } from './faq-test/faq-test.component';
 import { UserEditAddComponent } from './user-edit-add/user-edit-add.component';
 import { UsersProfileComponent } from './users-profile/users-profile.component';
 import { RoutingPageComponent } from './routing-page/routing-page.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
-
 import { RequestsMsgsComponent } from './requests-msgs/requests-msgs.component';
 import { TrainBotComponent } from './requests-msgs/train-bot/train-bot.component';
-
 import { GroupsComponent } from './groups/groups.component';
 import { GroupEditAddComponent } from './group-edit-add/group-edit-add.component';
 import { GroupsStaticComponent } from './static-pages/groups-static/groups-static.component';
-
-
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { HoursComponent } from './hours/hours.component';
 import { ResetPswComponent } from './reset-psw/reset-psw.component';
@@ -95,8 +82,6 @@ import { AnalyticsStaticComponent } from './static-pages/analytics-static/analyt
 import { ActivitiesStaticComponent } from './static-pages/activities-static/activities-static.component';
 import { HoursStaticComponent } from './static-pages/hours-static/hours-static.component';
 import { DepartmentsStaticComponent } from './static-pages/departments-static/departments-static.component';
-
-
 import { AnalyticsComponent } from './analytics/analytics.component';
 import { Analytics2Component } from './analytics2/analytics2.component';
 import { PanoramicaComponent } from './analytics2/panoramica/panoramica.component';
@@ -115,6 +100,8 @@ import { PaymentCanceledPageComponent } from './pricing/payment-canceled-page/pa
 import { PaymentsListComponent } from './pricing/payments-list/payments-list.component';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { InstallTiledeskComponent } from './install-tiledesk/install-tiledesk.component';
+import { LoadingPageComponent } from './loading-page/loading-page.component';
+import { CannedResponsesListComponent } from './canned-responses/canned-responses-list.component';
 
 
 const routes: Routes = [
@@ -146,19 +133,17 @@ const routes: Routes = [
   { path: 'create-project', component: CreateProjectComponent, canActivate: [AuthGuard] },
   // USED WHEN THE USER CLICK ON 'ADD NEW PROJECT' FROM THE NAVBAR
   { path: 'create-new-project', component: CreateProjectComponent, canActivate: [AuthGuard] },
+  
+  { path: 'project/:projectid/cannedresponses', component: CannedResponsesListComponent, canActivate: [AuthGuard] },
  
   { path: 'project/:projectid/install-tiledesk', component: InstallTiledeskComponent, canActivate: [AuthGuard] },
 
-
   { path: 'project/create', component: ProjectEditAddComponent, canActivate: [AuthGuard] },
-
-
 
   // { path: 'project/:projectid/edit', component: ProjectEditAddComponent, canActivate: [AuthGuard] },
   { path: 'project/:projectid/project-settings/general', component: ProjectEditAddComponent, canActivate: [AuthGuard] },
   { path: 'project/:projectid/project-settings/payments', component: ProjectEditAddComponent, canActivate: [AuthGuard] },
   { path: 'project/:projectid/project-settings/auth', component: ProjectEditAddComponent, canActivate: [AuthGuard] },
-
 
   // { path: 'home', component: HomeComponent, canActivate: [AuthGuard]}, // , canDeactivate: [AuthGuard]
   { path: 'project/:projectid/home', component: HomeComponent, canActivate: [AuthGuard] },
@@ -169,33 +154,33 @@ const routes: Routes = [
   { path: 'verify/email/:user_id', component: VerifyEmailComponent },
 
   { path: 'handle-invitation/:pendinginvitationid/:projectname/:adminfirstname/:adminsurname', component: HandleInvitationComponent },
-  
+  // added to resolve the error Cannot match any routes when the surname is not available  
+  { path: 'handle-invitation/:pendinginvitationid/:projectname/:adminfirstname', component: HandleInvitationComponent }, 
 
   { path: 'project/:projectid/unauthorized', component: UnauthorizedComponent },
-
 
   { path: 'userprofile', component: UserProfileComponent },
   // , canActivate: [AuthGuard]
   { path: 'project/:projectid/requests', component: RequestsListComponent, canActivate: [AuthGuard] },
 
   /*** WEBSOCKET ***/
-
   /**
    * if change wsrequest search for all occurrence - 
-   * remember that in the navbar component wsrequest is used for the link from the in app-notification to the request's messages
-   */
+   * remember that in the navbar component wsrequest is used for the link from the in app-notification to the request's messages */
   { path: 'project/:projectid/wsrequests', component: WsRequestsListComponent, canActivate: [AuthGuard] },
   { path: 'project/:projectid/wsrequest/:requestid/messages', component: WsRequestsMsgsComponent, canActivate: [AuthGuard] },
-  
-  { path: 'chat', component: ChatComponent, canActivate: [AuthGuard] },
 
+  // is the dummy component used in ws-requests-msgs: when the user is in the request' details page and 
+  // click an in-app notification (of a request unserved or assigned to him) the navigation is redirect to the loading component 
+  // and then again to request' details page
+  { path: 'project/:projectid/wsrequest/loading', component: LoadingPageComponent, canActivate: [AuthGuard] },
+  { path: 'chat', component: ChatComponent, canActivate: [AuthGuard] },
   { path: 'project/:projectid/chat', component: ChatComponent, canActivate: [AuthGuard] },
 
   // MESSAGES OF A REQUEST (IT BEFORE WERE DISPLAYED IN A MODAL WINDOW)
   // tslint:disable-next-line:max-line-length
   { path: 'project/:projectid/request/:requestid/messages', component: RequestsMsgsComponent, canActivate: [AuthGuard] },
   { path: 'project/:projectid/train', component: TrainBotComponent, canActivate: [AuthGuard] },
-
 
   // tslint:disable-next-line:max-line-length
   // ARE ALL THE USER OF A PROJECT (e.g. THE USER THAT HAS CREATED THE PROJECT AND THE USERS THAT HE HAS INVITED (THE OTHER MEMBERS OF THE PROJECT))
@@ -212,15 +197,12 @@ const routes: Routes = [
   // GROUP EDIT/ADD
   { path: 'project/:projectid/group/create', component: GroupEditAddComponent, canActivate: [AuthGuard] },
   { path: 'project/:projectid/group/edit/:groupid', component: GroupEditAddComponent, canActivate: [AuthGuard] },
-
   { path: 'project/:projectid/groups-demo', component: GroupsStaticComponent, canActivate: [AuthGuard] },
-
 
   // DISPLAY THE PROFILE OF THE MEMBER (USERS WHO HAVE BEEN INVITED)
   { path: 'project/:projectid/member/:memberid', component: UsersProfileComponent, canActivate: [AuthGuard] },
   // DISPLAY THE PROFILE OF THE BOT
   { path: 'project/:projectid/botprofile/:memberid', component: UsersProfileComponent, canActivate: [AuthGuard] },
-
 
   // IS THE PROFILE OF THE LOGGED USER
   { path: 'project/:projectid/user-profile', component: UserProfileComponent },
@@ -231,29 +213,27 @@ const routes: Routes = [
   // FAQKB (i.e. BOT)
   /* path /faqkb commented and duplicated RENAMED IN /bots */
   // { path: 'project/:projectid/faqkb', component: FaqKbComponent, canActivate: [AuthGuard] },
-  { path: 'project/:projectid/bots', component: FaqKbComponent, canActivate: [AuthGuard] },
-  { path: 'project/:projectid/createfaqkb', component: FaqKbEditAddComponent, canActivate: [AuthGuard] },
-
-  { path: 'project/:projectid/editfaqkb/:faqkbid', component: FaqKbEditAddComponent, canActivate: [AuthGuard] },
+  { path: 'project/:projectid/bots', component: BotListComponent, canActivate: [AuthGuard] },
+  { path: 'project/:projectid/bots/bot-select-type', component: BotTypeSelectComponent, canActivate: [AuthGuard] }, 
+  // { path: 'project/:projectid/bots/createfaqkb', component: BotCreateComponent, canActivate: [AuthGuard] }, // replaced by the bottom path
+  { path: 'project/:projectid/bots/create/:type', component: BotCreateComponent, canActivate: [AuthGuard] },
+  { path: 'project/:projectid/editfaqkb/:faqkbid', component: BotCreateComponent, canActivate: [AuthGuard] },
 
   // { path: 'faq/:faqkbid', component: FaqComponent, canActivate: [AuthGuard] }, // used to pass the faq kb id from  in faq page
 
   /* path /faq/:faqkbid' commented and duplicated RENAMED IN /bots/:faqkbid ( used to pass the faq kb id from  in faq page) */
   // { path: 'project/:projectid/faq/:faqkbid', component: FaqComponent, canActivate: [AuthGuard] },
-  { path: 'project/:projectid/bots/:faqkbid', component: FaqComponent, canActivate: [AuthGuard] },
+  { path: 'project/:projectid/bots/:faqkbid/:type', component: FaqComponent, canActivate: [AuthGuard] },
 
-  { path: 'project/:projectid/createfaq/:faqkbid', component: FaqEditAddComponent, canActivate: [AuthGuard] },
+  { path: 'project/:projectid/createfaq/:faqkbid/:bottype', component: FaqEditAddComponent, canActivate: [AuthGuard] },
 
-  { path: 'project/:projectid/editfaq/:faqkbid/:faqid', component: FaqEditAddComponent, canActivate: [AuthGuard] },
+  { path: 'project/:projectid/editfaq/:faqkbid/:faqid/:bottype', component: FaqEditAddComponent, canActivate: [AuthGuard] },
 
   // TEST-FAQ PAGE
   // { path: 'project/:projectid/faq/test/:remoteFaqKbKey/:faqkbid', component: FaqTestComponent, canActivate: [AuthGuard] },
   // TEST-FAQ PAGE NEW URL
   { path: 'project/:projectid/faq/test/:faqkbid', component: FaqTestComponent, canActivate: [AuthGuard] },
 
-  { path: 'project/:projectid/bots', component: BotsComponent, canActivate: [AuthGuard] },
-  { path: 'project/:projectid/createbot', component: BotEditAddComponent, canActivate: [AuthGuard] },
-  { path: 'project/:projectid/editbot/:botid', component: BotEditAddComponent, canActivate: [AuthGuard] },
 
   // , ProjectProfileGuard
   { path: 'project/:projectid/analytics/old', component: AnalyticsComponent, canActivate: [AuthGuard] },

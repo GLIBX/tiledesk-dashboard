@@ -26,6 +26,8 @@
     "SignUp": "Sign Up",
     "AlreadyHaveAnAccount": "Already have an account?",
     "DontHaveAnAccountYet": "Don't have an account yet?",
+    "Dont": "Don't",
+    "HaveAnAccountYet": "have an account yet?",
     "QuickTipsAssigned": "Assigned chats help maintain an even workload distribution, especially for larger teams.",
     "QuickTipsPooled": "Pooled chats give agents more autonomy, allowing them to work at their own pace.",
     "QuickTipsBot": "Select a bot that responds automatically.",
@@ -76,6 +78,7 @@
     "ViewContactRequests": "View requests",
     "ContactDetails": "Contact details",
     "Department": "Department",
+    "SelectADepartment": "Select a department",
     "DepartmentId": "Department id",
     "ProjectId": "Project id",
     "Message": "Message",
@@ -387,13 +390,76 @@
     "NoServedRequests": "No Served Requests",
     "NoRequests": "No Requests",
     "MultiLanguagePreview": "Change preview language",
-    "RequiredField":"Required field",
-    "Text":"Text",
-    "Alignment":"Alignment",
+    "RequiredField": "Required field",
+    "Text": "Text",
+    "Alignment": "Alignment",
     "UserRole": "User role",
-    "BotType": " / Bot type",
+    "BotType": "Bot type",
     "Language": "Language",
-    "ReassignToDept":"Reassign to department",
+    "ReassignToDept": "Reassign to department",
+    "AddTranslation": "Add translation",
+    "Completed": "Completed",
+    "TranslationDeleted": "{{language_name}} translation deleted",
+    "BotIntegration": "Bot integration",
+    "ChooseBotType": "Choose bot type",
+    "CreateA": "Create a {{ bottype }} bot",
+    "CreateAN": "Create an {{ bottype }} bot",
+    "ServiceAccountPrivateKeyFile": "Service account private key file",
+    "DragAFileHereOr": "Drag your .json credentials file here or",
+    "Browse": "browse",
+    "ToUpload": "to upload",
+    "CreateAnswers": "Create answers",
+    "CreateAFreeAccount": "Create a free account",
+    "CreateTicket": "Create Internal Request",
+    "Ok": "Ok",
+    "Subject": "Subject",
+    "DefaultBotLanguageInDialogflow": "Default bot language in Dialogflow",
+    "OurNativeEasyAndPowerfulNLPChatbot": "Our native, easy and powerful NLP (Natural Language Processing) chatbot",
+    "UseDialogflowToTrainYourBot...": "Use Dialogflow to train your bot with our native and innovative Dialogflow integration",
+    "UseYourFavouriteTechnology...": "Use your favourite technology to embed your chatbot with {{ company_name }}. Take a look at our",
+    "GetStartedTutorial": "Get Started Tutorial",
+    "DialogflowKnowledgeBaseID": "Dialogflow knowledge base ID",
+    "FillTheFieldOnlyIfYouWantToUseDialogflowKB": "Fill the field only if you want to use the Dialogflow's Knowledge-base feature",
+    "HereTheTutorial": "Here the tutorial on how connect your chatbots to {{ company_name }}.",
+    "FiletypeNotSupported": "file type not supported",
+    "CannedResponses": {
+        "QuickTips": {
+            "1": "Canned response are pre-made messages you can recall easily during chat.",
+            "2": "If you often reply to the same customer questions, consider saving those replies as canned responses.",
+            "3": "With canned responses, you type it once, save it and reuse it in chats whenever you need.",
+            "4": "You can also create a more engaging experience for your customers by using personalization in your message:",
+            "5": "1) When editing a message, you can insert a personalization field by first selecting the area in which you'd like to create the field.",
+            "6": "2) Next, click the ADD PERSONALIZATION button ",
+            "7": "3) Clicking the ADD PERSONALIZATION button will provide a list where you can select which personalization value you would like to add to your message."
+        },
+        "CR": "CR",
+        "CannedResponses": "Canned Responses",
+        "AddResponses": "Create Response",
+        "EditResponses": "Edit Response",
+        "Responses": "Responses",
+        "YouHaveNotAddedAnyCannedResponses": "You have not added any canned responses",
+        "Title": "Title",
+        "Message": "Message",
+        "AddCustomization": "Add personalisation",
+        "SelectACustomizationToAddToYourMessage": "Select a personalisation value to add to message",
+        "recipient_name_desc": "The first name of the person the agent replying to will be added to message.",
+        "recipient_lastname_desc": "The surname of the person the agent replying to will be added to message.",
+        "recipient_email_desc": "The email of the person the agent replying to will be added to message.",
+        "recipient_website_desc": "The website of the person the agent replying to will be added to message.",
+        "agent_name_desc":"The name of the agent who is replying will be added to the message.",
+        "First_name_of_recipient":"First name of recipient",
+        "Email_of_recipient":"Email of recipient",
+        "Website_of_recipient":"Website of recipient",
+        "First_name_of_agent":"First name of agent",
+        "NotificationMsgs": {
+            "DeleteCannedResError": "An error occurred while deleting response",
+            "DeleteCannedResSuccess": "Response successfully deleted",
+            "CreateCannedResSuccess": "Response successfully created",
+            "CreateCannedResError": "An error occurred while creating response",
+            "UpdateCannedResSuccess": "Response successfully updated",
+            "UpdateCannedResError": "An error occurred while updating response"
+        }
+    },
     "Pricing": {
         "Operators": "Operators",
         "UpgradePlan": "Upgrade Plan",
@@ -722,7 +788,17 @@
         "ExternalBot": "External Bot",
         "NoUrlProvided": "No url provided",
         "EnterExternalBotUrl": "enter external Bot Url",
-        "TheBotHasBeenTrashed": "the bot has been trashed"
+        "TheBotHasBeenTrashed": "the bot has been trashed",
+        "SelectAndConfigureABot": "Select and configure a Bot and then activate it in a department to use it in conversations",
+        "ExternabotQuickTips": "{{ company_name }} is designed to allow external chatbots to easy communicate with your Agents or End users.",
+        "DialogflowQuickTips_1A": "Login to",
+        "DialogflowQuickTips_1B": "Dialogflow console.",
+        "DialogflowQuickTips_2": "Select your Agent from the dropdown in left panel.",
+        "DialogflowQuickTips_3": "Click on setting button. It will open the agent setting page.",
+        "DialogflowQuickTips_4": "Inside general tab search for GOOGLE PROJECTS and click in your Service Account link.",
+        "DialogflowQuickTips_5": "After getting redirected to your SERVICE ACCOUNT console, create a key pressing '+ CREATE SERVICE ACCOUNT' on the top menu, create a JSON key that will be automatically downloaded.",
+        "DialogflowQuickTips_6": "Now upload the key .json credentials file.",
+        "DialogflowQuickTips_7": "If you need a detailed tutorial on how to create a credentials file please"
     },
     "BotsAddEditPage": {
         "AddBot": "Add Bot",
@@ -741,8 +817,10 @@
         "HasBeenCreated": "has been successfully created",
         "AddFaqToTheBot": "Add FAQs to the bot",
         "ReturnToTheBotList": "Return to the bot list",
+        "BackToBotsList": "Bots list",
         "AnErrorHasOccurred": "An error has occurred",
-        "Continue": "Continue"
+        "Continue": "Continue",
+        "Type": "Type"
     },
     "FaqPage": {
         "EditBOT": "Edit BOT",
@@ -908,9 +986,13 @@
         "CloseTheRequest": "Close request",
         "ForwardTheRequest": "forward request",
         "RequestClosed": "Request closed",
+        "InternalRequestClosed": "Internal request closed",
+        "Subject": "Subject",
         "WasServedBy": "was served by",
         "RequestUnserved": "Request unserved",
+        "InternalRequestUnserved": "Internal request unserved",
         "RequestServedBy": "Request served",
+        "InternalRequestServedBy": "Internal request served",
         "RequestId": "Request Id",
         "Published": "Published",
         "Created": "Created",
@@ -986,7 +1068,8 @@
                 "Placeholder": "Select activation method",
                 "WhenRequestChat": "When a visitor request a chat",
                 "WhenMessageIsSent": "When a chat message is sent",
-                "WhenUserIsLogged": "When user has logged in"
+                "WhenUserIsLogged": "When user has logged in",
+                "NewEvent": "New event"
             },
             "CheckConditions": "Check conditions",
             "CheckConditions_dropdownElements": {
@@ -1018,7 +1101,7 @@
                         "ChatInformation": "Char-related information"
                     },
                     "label_key": {
-                        "VisitorSearchTerm": "Visitor search terms",
+                        "VisitorSearchTerm": "Message text",
                         "VisitorName": "Visitor name",
                         "VisitorMail": "Visitor mail",
                         "VisitorDepartment": "Visitor department",
@@ -1045,20 +1128,20 @@
                         "LocationVisitor": "Location of visitor"
                     },
                     "label_key": {
-                        "VisitorSearchTerm": "Visitor text message ",
+                        "VisitorSearchTerm": "Message text",
                         "VisitorName": "Visitor name",
                         "VisitorMail": "Visitor mail",
-                        "VisitorFirstText": "Visitor First text",
+                        "VisitorFirstText": "First message text",
                         "VisitorDepartment": "Visitor department",
                         "VisitorReferrer": "Visitor referrer (Client)",
                         "VisitoruserAgent": "Visitor user agent",
-                        "VisitoruserAgentAvailable":"Visitor agent available online",
+                        "VisitoruserAgentAvailable": "Visitor agent available online",
                         "VisitorURL": "Visitor page URL",
                         "VisitorPageTitle": "Visitor page title",
                         "VisitorBrowser": "Visitor browser",
                         "VisitorPlatform": "Visitor platform",
                         "Department": "Department",
-                        "DepartmentHasBot": "Department (bot)",
+                        "DepartmentHasBot": "Department has bot",
                         "VisitorServed": "Visitor served",
                         "RequestStatus": "Request status",
                         "ChannelName": "Channel name",
@@ -1088,6 +1171,18 @@
                         "SelectDepartment": "Select department",
                         "SelectStatus": "Select status"
                     }
+                },
+                "event": {
+                    "groupId": {
+                        "VisitorInformation": "Visitor information"
+                    },
+                    "label_key": {
+                        "EventName": "Event name"
+                    },
+                    "placeholder": {
+                        "SelectDepartment": "Select department",
+                        "SelectStatus": "Select status"
+                    }
                 }
             },
             "OptionArray": {
@@ -1101,14 +1196,20 @@
                     "GreaterEqualThan": "Greather than or equal to",
                     "LessEqualThan": "Less than or equal to",
                     "HasOwnProperty": "Has a bot",
-                    "NotHasOwnProperty":"Not has a bot"
+                    "NotHasOwnProperty": "Not has a bot"
                 }
             },
             "ActionArray": {
                 "label_key": {
                     "SendMessageToVisitor": "Send message to visitor",
                     "AssignToDep": "Assign to department",
-                    "ReAssignToSameDep": "Reassign to the same department"
+                    "ReAssignToSameDep": "Reassign to the same department",
+                    "RequestUpdateStatus": "Change request status",
+                    "RequestClose": "Close request",
+                    "RequestReopen": "Reopen request",
+                    "RequestParticipantsJoin": "Participant join request",
+                    "RequestParticipantsLeave": "Participant leave request",
+                    "RequestCreate": "Create a request"
                 },
                 "placeholder": {
                     "NameAgent": "Name of agents",

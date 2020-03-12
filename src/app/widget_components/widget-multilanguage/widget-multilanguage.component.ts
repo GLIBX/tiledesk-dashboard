@@ -29,12 +29,13 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
 
   translations: any
   currentTraslationClone: object;
-  modifiedTranslation : object;
+  modifiedTranslation: object;
 
   engTraslationClone: object;
   errorNoticationMsg: string;
   disableAddBtn: boolean;
   updateWidgetSuccessNoticationMsg: string;
+  translationDeleted: string;
 
   constructor(
     public location: Location,
@@ -48,9 +49,18 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
   ngOnInit() {
     this.selectedTranslationCode = 'en'
 
-    this.translateGetTranslationErrorMsg();
+
+
+    this.getTranslation()
     this.getLabels();
     // this.getMockLabels()
+
+  }
+
+  getTranslation() {
+
+    this.translateGetTranslationErrorMsg();
+
 
   }
 
@@ -62,6 +72,12 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
         // console.log('+ + + An Error Has Occurred Notication Msg', text)
       });
   }
+
+
+
+
+
+
 
   public generateFake(count: number): Array<number> {
     const indexes = [];
@@ -76,16 +92,13 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
     const self = this
     this.widgetService.getLabels().subscribe((labels: any) => {
       console.log('Multilanguage ***** GET labels ***** - RES', labels);
-
       if (labels) {
-
         // this.translation = labels[0].data[0];
         this.translations = labels['data']
         // console.log('Multilanguage ***** GET labels ***** - RES > TRANSLATIONS ', labels[0].data[0]);
         console.log('Multilanguage ***** GET labels ***** - RES > TRANSLATIONS ', this.translations);
 
         this.languages_codes = [];
-
 
         if (this.translations.filter(e => e.lang === 'EN').length > 0) {
           /* vendors contains the element we're looking for */
@@ -176,14 +189,14 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
     this.showSheleton = true;
     this.selectedTranslationCode = this.temp_SelectedLangCode
     this.selectedTranslationLabel = this.temp_SelectedLangName
-    console.log('Multilanguage ***** addNewLanguage selectedTranslationCode', this.selectedTranslationCode);
-    console.log('Multilanguage ***** addNewLanguage selectedTranslationLabel', this.selectedTranslationLabel);
+    console.log('Multilanguage ***** ADD-NEW-LANG selectedTranslationCode', this.selectedTranslationCode);
+    console.log('Multilanguage ***** ADD-NEW-LANG selectedTranslationLabel', this.selectedTranslationLabel);
 
     // cloneLabel CHE RITORNERA IN RESPONSE LA NUOVA LINGUA (l'inglese nel caso non sia una delle nostre lingue pretradotte)
     this.widgetService.cloneLabel(this.temp_SelectedLangCode.toUpperCase())
       .subscribe((res: any) => {
         // console.log('Multilanguage - addNewLanguage - CLONE LABEL RES ', res);
-        console.log('Multilanguage - addNewLanguage - CLONE LABEL RES LANGUAGES', res.data);
+        console.log('Multilanguage - ADD-NEW-LANG (clone-label) RES ', res.data);
 
         if (res) {
 
@@ -193,10 +206,13 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
         }
 
       }, error => {
-        console.log('Multilanguage SAVE label - ERROR ', error)
+        console.log('Multilanguage ADD-NEW-LANG (clone-label) - ERROR ', error)
       }, () => {
-        console.log('Multilanguage SAVE label * COMPLETE *')
+        console.log('Multilanguage ADD-NEW-LANG (clone-label) * COMPLETE *')
+
+
         this.showSheleton = false;
+        this.notify.presentModalSuccessCheckModal('AddTranslation', 'Completed')
       });
 
     // // ADD THE NEW LANGUAGE TO BOTTOM NAV
@@ -214,7 +230,7 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
         console.log('Multilanguage -- onChangeTranslation - traslation ', translation)
 
         if (translation.lang.toLowerCase() === this.selectedTranslationCode) {
-         
+
           // console.log('Multilanguage - onChangeTranslation CLONE OF CURRENT TRASLATION ', this.currentTraslationClone);
 
 
@@ -224,20 +240,20 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
 
           var found_key = Object.keys(this.engTraslationClone).find(key => this.engTraslationClone[key] === labelName);
           console.log('Multilanguage - onChangeTranslation filter result found_key ', found_key);
-                  
+
           translation['data'][found_key] = event
           console.log('Multilanguage - onChangeTranslation ========== translation[data] ', translation['data']);
 
           this.currentTraslationClone = Object.assign({}, translation['data']);
           console.log('Multilanguage - onChangeTranslation currentTraslationClone Translation', this.currentTraslationClone);
-          
+
           // console.log('Multilanguage - onChangeTranslation ========== this.translations', this.translations);
           // const found_translation = this.translations.filter((obj: any) => {
           //   return obj.lang === this.selectedTranslationCode.toUpperCase();
           // });
           // console.log('Multilanguage - onChangeTranslation ========== found_translation', found_translation);
 
-     
+
         }
       }
     });
@@ -253,12 +269,14 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
     this.widgetService.editLabels(this.selectedTranslationCode.toUpperCase(), this.currentTraslationClone)
       .subscribe((labels: any) => {
         console.log('Multilanguage (widget-mtl) - editLang RES ', labels);
-       
+
       }, error => {
         console.log('Multilanguage (widget-mtl) - editLang - ERROR ', error);
 
-        this.translateAndShowUpdateWidgetNotification();
+        this.notify.showNotification(this.errorNoticationMsg, 4, 'report_problem');
       }, () => {
+
+        this.translateAndShowUpdateWidgetNotification();
         console.log('Multilanguage (widget-mtl) - editLang * COMPLETE *')
       });
   }
@@ -296,10 +314,9 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
   }
 
 
-
-
-
   deleteLang() {
+
+    console.log('Multilanguage deleteLang selected Translation Label', this.selectedTranslationLabel);
     const btn_delete_lang = <HTMLElement>document.querySelector('.btn_delete_lang');
     if (btn_delete_lang) {
       btn_delete_lang.blur()
@@ -331,15 +348,46 @@ export class WidgetMultilanguageComponent extends BaseTranslationComponent imple
         console.log('Multilanguage (widget-mtl) - deleteLang RES ', labels);
       }, error => {
         console.log('Multilanguage (widget-mtl) - deleteLang - ERROR ', error)
-      
+        this.notify.showNotification(this.errorNoticationMsg, 4, 'report_problem');
+
+        this.selectedTranslationCode = 'add'
       }, () => {
 
         this.selectedTranslationCode = 'add'
         this.selectedLang = null;
         this.disableAddBtn = true;
-        console.log('Multilanguage (widget-mtl) - deleteLang * COMPLETE *')
+
+        console.log('Multilanguage (widget-mtl) - deleteLang * COMPLETE *');
+
+        this.translateTranslationDeletedAndShowNotification()
+
       });
   }
+
+  translateTranslationDeletedAndShowNotification() {
+    this.translateTranslationDeleted();
+  }
+
+  translateTranslationDeleted() {
+    this.translate.get('TranslationDeleted', { language_name: this.selectedTranslationLabel })
+
+      .subscribe((text: string) => {
+
+        this.translationDeleted = text;
+        console.log('+ + + translateTranslationDeleted ', text)
+      }, (error) => {
+        console.log('+ + + translateTranslationDeleted  - ERROR ', error);
+      }, () => {
+        console.log('+ + + translateTranslationDeleted  * COMPLETE *');
+        this.notify.showWidgetStyleUpdateNotification(this.translationDeleted, 2, 'done');
+
+
+        
+      });
+
+
+  }
+
 
 
 

@@ -1,5 +1,4 @@
 import { Component, OnInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
-import { RequestsService } from '../services/requests.service';
 import { Request } from '../models/request-model';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/auth.service';
@@ -16,6 +15,9 @@ import { ProjectPlanService } from '../services/project-plan.service';
 import { TranslateService } from '@ngx-translate/core';
 import { NotifyService } from '../core/notify.service';
 import { AppConfigService } from '../services/app-config.service';
+import * as moment from 'moment';
+// import { RequestsService } from '../services/requests.service';
+import { WsRequestsService } from '../services/websocket/ws-requests.service';
 
 @Component({
   selector: 'appdashboard-requests-list-history-new',
@@ -105,7 +107,7 @@ export class RequestsListHistoryNewComponent implements OnInit, OnDestroy {
   storageBucket: string;
 
   constructor(
-    private requestsService: RequestsService,
+    // private requestsService: RequestsService,
     private router: Router,
     public auth: AuthService,
     private usersLocalDbService: UsersLocalDbService,
@@ -116,8 +118,9 @@ export class RequestsListHistoryNewComponent implements OnInit, OnDestroy {
     private prjctPlanService: ProjectPlanService,
     private translate: TranslateService,
     private notify: NotifyService,
-    public appConfigService: AppConfigService
-  ) {  }
+    public appConfigService: AppConfigService,
+    private wsRequestsService: WsRequestsService
+  ) { }
 
   ngOnInit() {
     // this.auth.checkRoleForCurrentProject();
@@ -512,7 +515,7 @@ export class RequestsListHistoryNewComponent implements OnInit, OnDestroy {
       console.log('!!! NEW REQUESTS HISTORY - EXPORT TO CSV BTN', exportToCsvBtn)
       exportToCsvBtn.blur()
 
-      this.requestsService.downloadNodeJsHistoryRequestsAsCsv(this.queryString, 0).subscribe((requests: any) => {
+      this.wsRequestsService.downloadNodeJsHistoryRequestsAsCsv(this.queryString, 0).subscribe((requests: any) => {
         if (requests) {
           console.log('!!! NEW REQUESTS HISTORY - DOWNLOAD REQUESTS AS CSV - RES ', requests);
 
@@ -549,7 +552,7 @@ export class RequestsListHistoryNewComponent implements OnInit, OnDestroy {
 
   getRequests() {
     this.showSpinner = true;
-    this.requestsService.getNodeJsHistoryRequests(this.queryString, this.pageNo).subscribe((requests: any) => {
+    this.wsRequestsService.getNodeJsHistoryRequests(this.queryString, this.pageNo).subscribe((requests: any) => {
       console.log('!!! NEW REQUESTS HISTORY - GET REQUESTS ', requests['requests']);
       console.log('!!! NEW REQUESTS HISTORY - GET REQUESTS COUNT ', requests['count']);
       if (requests) {
@@ -598,6 +601,20 @@ export class RequestsListHistoryNewComponent implements OnInit, OnDestroy {
             request.requester_fullname_fillColour = newFillColour;
             // .authVar.token.firebase.sign_in_provider
             // console.log('---- lead sign_in_provider ',  request.lead.attributes.senderAuthInfo);
+
+
+            if (this.browserLang === 'it') {
+              // moment.locale('it')
+              const date = moment(request.createdAt).format('dddd, DD MMM YYYY - HH:mm:ss');
+              console.log('ActivitiesComponent - getActivities - updatedAt date', date);
+              request.fulldate = date;
+            } else {
+              const date = moment(request.createdAt).format('dddd, MMM DD, YYYY - HH:mm:ss');
+              console.log('ActivitiesComponent - getActivities - updatedAt date', date);
+              request.fulldate = date;
+            }
+
+
             if (request.lead
               && request.lead.attributes
               && request.lead.attributes.senderAuthInfo
@@ -650,10 +667,18 @@ export class RequestsListHistoryNewComponent implements OnInit, OnDestroy {
 
       const bot = this.botLocalDbService.getBotFromStorage(bot_id);
       if (bot) {
-        // '- ' +
-        return member_id = bot['name'] + ' (bot)';
+
+         let botType = "";
+        if (bot.type === 'internal') {
+
+          botType = 'native'
+        } else {
+          botType = bot.type
+        }
+        // ${botType} 
+        return member_id = bot['name'] + ` (bot)`;
       } else {
-        // '- ' +
+       
         return member_id
       }
 
@@ -677,7 +702,20 @@ export class RequestsListHistoryNewComponent implements OnInit, OnDestroy {
     if (member_id.indexOf('bot_') !== -1) {
       console.log('!!! NEW REQUESTS HISTORY IS A BOT !');
 
-      this.router.navigate(['project/' + this.projectId + '/botprofile/' + member_id]);
+
+      const bot_id = member_id.slice(4);
+      const bot = this.botLocalDbService.getBotFromStorage(bot_id);
+
+      let botType = ''
+      if (bot.type === 'internal') {
+        botType = 'native'
+      } else {
+        botType = bot.type
+      }
+      // this.router.navigate(['project/' + this.projectId + '/botprofile/' + member_id]);
+      this.router.navigate(['project/' + this.projectId + '/bots', bot_id, botType]);
+
+
     } else {
       this.router.navigate(['project/' + this.projectId + '/member/' + member_id]);
     }

@@ -5,7 +5,7 @@ import { Http, Headers, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/map';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
-
+import { AppConfigService } from '../services/app-config.service';
 
 @Injectable()
 export class FaqKbService {
@@ -13,17 +13,27 @@ export class FaqKbService {
   http: Http;
   // MONGODB_BASE_URL = environment.mongoDbConfig.FAQKB_BASE_URL;
   // TOKEN = environment.mongoDbConfig.TOKEN;
-  BASE_URL = environment.mongoDbConfig.BASE_URL;
-  MONGODB_BASE_URL: any;
+
+  // BASE_URL = environment.mongoDbConfig.BASE_URL;  // replaced
+  // SERVER_BASE_PATH = environment.SERVER_BASE_URL;  // now get from appconfig
+  // DLGFLW_BOT_CREDENTIAL_BASE_URL = environment.botcredendialsURL; // now get from appconfig
+  
+  SERVER_BASE_PATH: string;
+  DLGFLW_BOT_CREDENTIAL_BASE_URL: string;
+
+
+  FAQKB_URL: any;
 
   TOKEN: string;
   user: any;
 
   project: any;
 
+
   constructor(
     http: Http,
-    private auth: AuthService
+    private auth: AuthService,
+    public appConfigService: AppConfigService
   ) {
     // // tslint:disable-next-line:no-debugger
     // debugger
@@ -43,6 +53,15 @@ export class FaqKbService {
 
     this.getCurrentProject();
 
+    this.getAppConfig();
+  }
+
+  getAppConfig() {
+    // this.DLGFLW_BOT_CREDENTIAL_BASE_URL = this.appConfigService.getConfig().botcredendialsURL;
+    this.SERVER_BASE_PATH = this.appConfigService.getConfig().SERVER_BASE_URL;
+
+    console.log('AppConfigService getAppConfig (FAQ-KB SERV.) DLGFLW_BOT_CREDENTIAL_BASE_URL ', this.DLGFLW_BOT_CREDENTIAL_BASE_URL);
+    console.log('AppConfigService getAppConfig (FAQ-KB SERV.) SERVER_BASE_PATH ', this.SERVER_BASE_PATH);
   }
 
   getCurrentProject() {
@@ -56,7 +75,10 @@ export class FaqKbService {
 
       if (this.project) {
         console.log('00 -> FAQKB SERVICE project ID from AUTH service subscription  ', this.project._id)
-        this.MONGODB_BASE_URL = this.BASE_URL + this.project._id + '/faq_kb/'
+        this.FAQKB_URL = this.SERVER_BASE_PATH + this.project._id + '/faq_kb/'
+
+
+        this.DLGFLW_BOT_CREDENTIAL_BASE_URL = this.appConfigService.getConfig().botcredendialsURL + this.project._id + '/bots/';
       }
     });
   }
@@ -81,7 +103,7 @@ export class FaqKbService {
    *     (in the view the menu item FAQ (alias faq-kb) have been renamed in BOT)
    */
   public getMongDbFaqKb(): Observable<FaqKb[]> {
-    const url = this.MONGODB_BASE_URL;
+    const url = this.FAQKB_URL;
     console.log('MONGO DB FAQ-KB URL', url);
 
     const headers = new Headers();
@@ -98,7 +120,7 @@ export class FaqKbService {
    * ID AS PARAMETER
    */
   public getFaqKbByProjectId(): Observable<FaqKb[]> {
-    const url = this.MONGODB_BASE_URL;
+    const url = this.FAQKB_URL;
     // url += '?id_project=' + `${id_project}`;
     // const url = `http://localhost:3000/${id_project}/faq_kb/`;
     console.log('GET FAQ-KB BY PROJECT ID URL', url);
@@ -115,7 +137,7 @@ export class FaqKbService {
    * READ DETAIL (GET BY ID)
    */
   public getMongDbFaqKbById(id: string): Observable<FaqKb[]> {
-    let url = this.MONGODB_BASE_URL;
+    let url = this.FAQKB_URL;
     url += `${id}`;
     console.log('MONGO DB GET BY ID FAQ-KB URL', url);
 
@@ -131,27 +153,26 @@ export class FaqKbService {
    * CREATE (POST)
    * @param fullName
    */
-  public addMongoDbFaqKb(name: string, urlfaqkb: string, is_external_bot: boolean) {
+  // public addMongoDbFaqKb(name: string, urlfaqkb: string, is_external_bot: boolean) {
+  public addMongoDbFaqKb(name: string, urlfaqkb: string, bottype: string) {
     const headers = new Headers();
     headers.append('Accept', 'application/json');
     headers.append('Content-type', 'application/json');
     headers.append('Authorization', this.TOKEN);
     const options = new RequestOptions({ headers });
 
-
     // const isPreDeploy = false
-
-    const body = { 'name': name, 'url': urlfaqkb, 'id_project': this.project._id };
+    const body = { 'name': name, 'url': urlfaqkb, 'id_project': this.project._id, 'type': bottype };
 
 
     /* FOR PRE */
-    let botType = ''
-    if (is_external_bot === true) {
-      botType = 'external'
-    } else {
-      botType = 'internal'
-    }
-    body['type'] = botType
+    // let botType = ''
+    // if (is_external_bot === true) {
+    //   botType = 'external'
+    // } else {
+    //   botType = 'internal'
+    // }
+    // body['type'] = botType
 
 
     /* FOR PROD */
@@ -159,11 +180,62 @@ export class FaqKbService {
 
     console.log('CREATE BOT - POST REQUEST BODY ', body);
 
-    const url = this.MONGODB_BASE_URL;
+    const url = this.FAQKB_URL;
     // let url = `http://localhost:3000/${project_id}/faq_kb/`;
 
     return this.http
       .post(url, JSON.stringify(body), options)
+      .map((res) => res.json());
+
+  }
+
+  // IF THE BOT IS OF TYPE DIALOGFLOW, AFTER THAT A NEW FAQKB WAS CREATED RUN A CALLBACK TO POST THE 
+  // dialogfolw bot CREDENTIAL
+  uploadDialogflowBotCredetial(botid: string, formData: any) {
+    const headers = new Headers();
+
+    // headers.append('Accept', 'text/csv');
+    // headers.append('Accept', 'application/json');
+    // headers.append('Content-type', 'multipart/form-data');
+    headers.append('Authorization', this.TOKEN);
+    console.log('uploadDialogflowBotCredetial formData ', formData)
+
+    // const url =  "http://dialogflow-proxy-tiledesk.herokuapp.com/uploadgooglecredendials/" + botid
+    const url = this.DLGFLW_BOT_CREDENTIAL_BASE_URL + botid
+
+    const options = new RequestOptions({ headers: headers });
+    return this.http
+      .post(url, formData, options)
+      .map(res => res.json())
+  }
+
+  getDialogflowBotCredetial(botid: string) {
+    let url = this.DLGFLW_BOT_CREDENTIAL_BASE_URL + botid;
+
+    console.log('getDialogflowBotCredetialURL', url);
+
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('Authorization', this.TOKEN);
+    return this.http
+      .get(url, { headers })
+      .map((response) => response.json());
+  }
+
+
+  public deleteDialogflowBotCredetial(id: string) {
+
+    let url = this.DLGFLW_BOT_CREDENTIAL_BASE_URL + id;
+
+    console.log('deleteDialogflowBotCredetial DELETE URL ', url);
+
+    const headers = new Headers();
+    headers.append('Accept', 'application/json');
+    headers.append('Content-type', 'application/json');
+    headers.append('Authorization', this.TOKEN);
+    const options = new RequestOptions({ headers });
+    return this.http
+      .delete(url, options)
       .map((res) => res.json());
 
   }
@@ -203,8 +275,7 @@ export class FaqKbService {
    * @param id
    */
   public deleteMongoDbFaqKb(id: string) {
-
-    let url = this.MONGODB_BASE_URL;
+    let url = this.FAQKB_URL;
     url += `${id}# chat21-api-nodejs`;
     console.log('DELETE URL ', url);
 
@@ -224,10 +295,10 @@ export class FaqKbService {
    * @param id
    * @param fullName
    */
-  public updateMongoDbFaqKb(id: string, name: string, urlfaqkb: string, is_external_bot: boolean) {
+  public updateMongoDbFaqKb(id: string, name: string, urlfaqkb: string, bottype: string) {
 
-    let url = this.MONGODB_BASE_URL;
-    url = url += `${id}`;
+    let url = this.FAQKB_URL + id;
+    // url = url += `${id}`;
     console.log('PUT URL ', url);
 
     const headers = new Headers();
@@ -236,15 +307,15 @@ export class FaqKbService {
     headers.append('Authorization', this.TOKEN);
     const options = new RequestOptions({ headers });
 
-    const body = { 'name': name, 'url': urlfaqkb };
+    const body = { 'name': name, 'url': urlfaqkb, 'type': bottype };
 
-    let botType = ''
-    if (is_external_bot === true) {
-      botType = 'external'
-    } else {
-      botType = 'internal'
-    }
-    body['type'] = botType
+    // let botType = ''
+    // if (is_external_bot === true) {
+    //   botType = 'external'
+    // } else {
+    //   botType = 'internal'
+    // }
+    // body['type'] = botType
 
 
     /* FOR PROD */
@@ -265,7 +336,7 @@ export class FaqKbService {
   */
   public updateFaqKbAsTrashed(id: string, _trashed: boolean) {
 
-    let url = this.MONGODB_BASE_URL;
+    let url = this.FAQKB_URL;
     url = url += `${id}`;
     console.log('PUT URL ', url);
 

@@ -2,15 +2,30 @@
 # tiledesk-dashboard
 
 ### 2.0.0
+- Adds widget trigger
 - Adds filters for agent and department in the requests' list page
 - Displays the request's attributes in the request details page
-- Fixes the user profile image reload
+- Fixes the upload of the user profile image when one already exist
+- Adds the ability to upload bot profile image
 - Fixes the bottom nav in metrics page
 - Adds the ability to customize all over the app the properties concerning the company (company name, the logo images, company site and contact email and more)
 - Changes the environments' publicKey
 - Adds the ability to customize buttons' color
-- Multilanguage 
+- Adds the ability to translate or edit all the phrases appearing in the widget
 - Adds the ability to reassign a request to a department
+- Adds the ability to reassign a request to a bot
+- Adds the ability to view all the request' attributes
+- Adds the ability to view all the contact' attributes
+- Fixes the in-app notifications and count of unserved requests when user' role is agent 
+- Fixes the reload of the request's details page when change the request id url parameter
+- Fixes the handle-invitation path without surname parameter 
+- Fixes registration form' email validation to not allow address without domain
+- Edits some services endpoints for users and project users
+- Fixes "project settings" sidebar menu item is not displayed
+- Fixes the error that generates the logout if made in the request' details page
+- Adds the ability to create an "internal request"
+- Adds the ability to chat with an agent of a request
+- Adds the ability to integrate a Dialogflow bot
 
 ### 1.0.40
 - Fixes the user profile urls
